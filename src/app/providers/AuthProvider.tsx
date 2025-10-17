@@ -1,5 +1,5 @@
 // src/app/providers/AuthProvider.tsx
-import { AuthProvider as PBRSAuthProvider } from "@/shared/contexts/AuthContext";
+import { AuthProvider as BRMSAuthProvider  } from "@/shared/contexts/AuthContext";
 
 /**
  * App-level AuthProvider wrapper.
@@ -10,5 +10,5 @@ import { AuthProvider as PBRSAuthProvider } from "@/shared/contexts/AuthContext"
  * - Keeps App.tsx clean.
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  return <PBRSAuthProvider>{children}</PBRSAuthProvider>;
+  return <BRMSAuthProvider >{children}</BRMSAuthProvider >;
 }

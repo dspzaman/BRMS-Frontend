@@ -49,7 +49,7 @@ export default function Header() {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">PBRS</h1>
+            <h1 className="text-xl font-semibold text-gray-900">BRMS</h1>
             <p className="text-xs text-gray-500">Budget &amp; Requisition Management System</p>
           </div>
         </div>
