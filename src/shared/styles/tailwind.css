@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  /* === Brand Greens (ems-green scale) === */
+  --color-ems-green-50:  #f0f9f4;
+  --color-ems-green-100: #dcf4e6;
+  --color-ems-green-200: #bce8d1;
+  --color-ems-green-300: #8dd5b3;
+  --color-ems-green-400: #57bc8f;
+  --color-ems-green-500: #116B28;
+  --color-ems-green-600: #0f5d24;
+  --color-ems-green-700: #0d4a1e;
+  --color-ems-green-800: #0b3b19;
+  --color-ems-green-900: #093016;
+
+  /* === Primary Variants === */
+  --color-primary-green-hover:   #0d5620;
+  --color-primary-green-light:   #329938;
+  --color-primary-green-lighter: #74C663;
+  --color-primary-green-dark:    #0a4a1c;
+  --color-ems-dark-green:        #0D5A22;
+  --color-ems-light-green:       #E8F5E8;
+  --color-focus-green:           rgba(17, 107, 40, 0.1);
+
+  /* === Secondary / Accent Greens === */
+  --color-secondary-green:       #329938;
+  --color-secondary-green-hover: #2a7d30;
+  --color-accent-green:          #74C663;
+  --color-accent-green-hover:    #5fb054;
+
+  /* === Status Colors === */
+  --color-success-green:        #10b981;
+  --color-success-green-light:  #d1fae5;
+  --color-warning-yellow:       #f59e0b;
+  --color-warning-yellow-light: #fef3c7;
+  --color-error-red:            #ef4444;
+  --color-error-red-light:      #fee2e2;
+  --color-info-blue:            #3b82f6;
+  --color-info-blue-light:      #dbeafe;
+  --color-utilization-over:     #DC2626;
+
+  /* === Neutral Grays (mostly Tailwind defaults, but adding for clarity) === */
+  --color-gray-50:  #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+}
