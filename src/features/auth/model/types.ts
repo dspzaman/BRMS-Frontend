@@ -16,6 +16,7 @@ export interface UserRoleInfo {
 
 // Program assignment type
 export interface UserProgramInfo {
+  program_id: number;
   program: string;
   role_in_program: string;
   is_primary: boolean;
