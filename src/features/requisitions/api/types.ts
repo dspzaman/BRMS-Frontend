@@ -274,3 +274,28 @@ export interface UploadDocumentRequest {
   file: File;
   description?: string;
 }
+
+// ============================================================================
+// Rate Types
+// ============================================================================
+
+export interface TravelRate {
+  id: number | string;  // Can be numeric ID or 'default'
+  rate: string;         // Decimal as string (e.g., "0.6800")
+  start_date: string;   // ISO date string (YYYY-MM-DD)
+  end_date: string | null;  // ISO date string or null for open-ended
+  status: 'active' | 'inactive' | 'superseded' | 'default';
+}
+
+export interface TravelExpenseType {
+  id: number;  // expense_code_assignment_id
+  display_name: string;  // "Admin - 5798 (Staff Mileage)"
+  category_name: string;
+  category_id: number;
+  parent_category_name: string | null;
+  parent_category_id: number | null;
+  expense_code: string;
+  expense_code_id: number;
+  expense_code_description: string;
+  full_category_path: string;
+}

@@ -3,6 +3,10 @@ import { useForm, FormProvider } from "react-hook-form";
 import type { RequisitionFormData } from "../model/types";
 import { GeneralExpensesSection } from "./sections/GeneralExpensesSection";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { TravelExpensesSection } from "./sections/TravelExpensesSection";
+import { PerDiemExpensesSection } from "./sections/PerDiemExpensesSection";
+import { SupportingDocumentsSection } from "./sections/SupportingDocumentsSection";
+import { BasicInfoSection } from "./sections/BasicInfoSection";
 
 export default function RequisitionForm() {
   const { user } = useAuth();
@@ -22,6 +26,11 @@ export default function RequisitionForm() {
   // Initialize React Hook Form
   const methods = useForm<RequisitionFormData>({
     defaultValues: {
+      // Expense type toggles
+      includeGeneralExpenses: true, // Default: General expenses shown
+      includeTravelExpenses: false,
+      includePerDiemExpenses: false,
+      
       // Start with one general expense row
       generalExpenses: [
         {
@@ -35,21 +44,34 @@ export default function RequisitionForm() {
         },
       ],
       
-      // Travel expenses (we'll add later)
-      includeTravelExpenses: false,
-      travelExpenses: [],
+      // Start with one travel expense row
+      travelExpenses: [
+        {
+          program: getDefaultProgram(),
+          category: null,
+          travelDate: "",
+          startAddress: "",
+          endAddress: "",
+          description: "",
+          totalKm: "",
+          ratePerKm: "0.68", // Default rate
+          amount: "",
+          gstRate: "0",
+          gstAmount: "",
+          totalAmount: "",
+        },
+      ],
       
-      // Per diem expenses (we'll add later)
-      includePerDiemExpenses: false,
+      // Per diem expenses
       perDiemExpenses: [],
       
-      // Basic info (we'll add later)
+      // Basic info
       requisitionDate: new Date().toISOString().split("T")[0],
       payeeType: null,
       payeeId: null,
       payeeOther: "",
       
-      // Documents (we'll add later)
+      // Documents
       documents: [],
     },
   });
@@ -66,13 +88,75 @@ export default function RequisitionForm() {
     // TODO: Call API to submit
   };
 
+  // Watch expense type checkboxes
+  const includeGeneralExpenses = methods.watch("includeGeneralExpenses");
+  const includeTravelExpenses = methods.watch("includeTravelExpenses");
+  const includePerDiemExpenses = methods.watch("includePerDiemExpenses");
+
+  // Ensure at least one expense type is selected
+  const isOnlyGeneralSelected = includeGeneralExpenses && !includeTravelExpenses;
+  const isOnlyTravelSelected = !includeGeneralExpenses && includeTravelExpenses;
+
   return (
     <FormProvider {...methods}>
       <form className="space-y-8">
-        {/* Section 1: General Expenses (Only this for now) */}
-        <GeneralExpensesSection />
+        {/* Expense Type Selection */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Select Expense Types
+          </h3>
+          
+          <div className="flex items-center gap-8">
+            {/* General Expense Checkbox */}
+            <label className={`flex items-center space-x-3 ${isOnlyGeneralSelected ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+              <input
+                type="checkbox"
+                {...methods.register("includeGeneralExpenses")}
+                disabled={isOnlyGeneralSelected}
+                className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600 disabled:cursor-not-allowed"
+              />
+              <span className="text-sm font-medium text-gray-900">
+                General Expenses
+              </span>
+              <span className="text-xs text-gray-500">
+                (Office supplies, utilities, services, etc.)
+              </span>
+            </label>
 
-        {/* Temporary Action Buttons (inline for now) */}
+            {/* Travel Expense Checkbox */}
+            <label className={`flex items-center space-x-3 ${isOnlyTravelSelected ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+              <input
+                type="checkbox"
+                {...methods.register("includeTravelExpenses")}
+                disabled={isOnlyTravelSelected}
+                className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600 disabled:cursor-not-allowed"
+              />
+              <span className="text-sm font-medium text-gray-900">
+                Travel Expenses
+              </span>
+              <span className="text-xs text-gray-500">
+                (Mileage, transportation costs)
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Section 1: General Expenses (conditional) */}
+        {includeGeneralExpenses && <GeneralExpensesSection />}
+
+        {/* Section 2: Travel Expenses (conditional) */}
+        {includeTravelExpenses && <TravelExpensesSection />}
+
+        {/* Section 3: Per Diem Expenses (conditional - only if travel is checked) */}
+        {includeTravelExpenses && includePerDiemExpenses && <PerDiemExpensesSection />}
+
+        {/* Section 4: Supporting Documents */}
+        <SupportingDocumentsSection />
+
+        {/* Section 5: Basic Information */}
+        <BasicInfoSection />
+
+        {/* Action Buttons */}
         <div className="flex justify-end space-x-4 bg-white border border-gray-200 rounded-lg p-6">
           <button
             type="button"

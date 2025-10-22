@@ -40,17 +40,26 @@ export interface GeneralExpenseFormData {
  * Maps to backend TravelExpenseLineItem model
  */
 export interface TravelExpenseFormData {
-  // Program and budget
+  // Program tracking
   program: number | null;
-  budget: number | null;
+  
+  // Category and expense code assignment
+  category: number | null; // Optional - can be derived from expenseCodeAssignment
+  expenseCodeAssignment: number | null; // ExpenseCodeAssignment ID (category + code combination)
   
   // Travel details
-  distance: string; // Distance in km
-  rate: string; // Rate per km (auto-populated from backend)
-  description: string;
+  travelDate: string; // ISO date string (YYYY-MM-DD)
+  startAddress: string; // Starting location
+  endAddress: string; // Destination
+  description: string; // Purpose of travel
+  totalKm: string; // Distance in kilometers
   
-  // Calculated fields
-  totalAmount?: string; // Calculated: distance × rate
+  // Rate and amounts (auto-populated from backend)
+  ratePerKm: string; // Rate per kilometer
+  amount: string; // Calculated: totalKm × ratePerKm
+  gstRate: string; // GST percentage (0-100), default 0
+  gstAmount: string; // Calculated: amount × (gstRate/100)
+  totalAmount: string; // Calculated: amount + gstAmount
 }
 
 /**
@@ -58,20 +67,29 @@ export interface TravelExpenseFormData {
  * Maps to backend PerDiemExpenseLineItem model
  */
 export interface PerDiemExpenseFormData {
-  // Program and budget
+  // Program tracking
   program: number | null;
-  budget: number | null;
+  
+  // Category and expense code assignment
+  expenseCodeAssignment: number | null; // ExpenseCodeAssignment ID (category + code combination for 5791)
   
   // Per diem details
-  startDate: string;
-  endDate: string;
-  breakfast: boolean;
-  lunch: boolean;
-  dinner: boolean;
-  description: string;
+  mealDate: string; // Single date (YYYY-MM-DD) - backend has meal_date field
+  includeBreakfast: boolean; // Checkbox for breakfast
+  includeLunch: boolean; // Checkbox for lunch
+  includeDinner: boolean; // Checkbox for dinner
+  description: string; // Purpose of per diem claim
+  
+  // Meal rates (auto-populated from backend based on date)
+  breakfastRate: string; // Rate for breakfast (e.g., "28.40")
+  lunchRate: string; // Rate for lunch (e.g., "27.40")
+  dinnerRate: string; // Rate for dinner (e.g., "57.70")
   
   // Calculated fields
-  totalAmount?: string; // Calculated based on meals and rates
+  amount: string; // Sum of selected meals: (breakfast ? breakfastRate : 0) + (lunch ? lunchRate : 0) + (dinner ? dinnerRate : 0)
+  gstRate: string; // GST percentage (0-100), default 0
+  gstAmount: string; // Calculated: amount × (gstRate/100)
+  totalAmount: string; // Calculated: amount + gstAmount
 }
 
 /**
@@ -89,14 +107,15 @@ export interface DocumentFormData {
  * Main form structure for creating/editing requisitions
  */
 export interface RequisitionFormData {
-  // Section 1: General Expenses (always present, at least 1 row)
+  // Section 1: General Expenses (optional, show if checkbox checked, default: true)
+  includeGeneralExpenses: boolean;
   generalExpenses: GeneralExpenseFormData[];
   
   // Section 2: Travel Expenses (optional, show if checkbox checked)
   includeTravelExpenses: boolean;
   travelExpenses: TravelExpenseFormData[];
   
-  // Section 3: Per Diem Expenses (optional, show if checkbox checked)
+  // Section 3: Per Diem Expenses (optional, show if Travel is checked AND per diem checkbox is checked)
   includePerDiemExpenses: boolean;
   perDiemExpenses: PerDiemExpenseFormData[];
   
