@@ -299,3 +299,38 @@ export interface TravelExpenseType {
   expense_code_description: string;
   full_category_path: string;
 }
+
+export interface PerDiemExpenseType {
+  id: number;  // expense_code_assignment_id
+  display_name: string;  // "Admin - 5791 (Living Expenses)"
+  category_name: string;
+  category_id: number;
+  parent_category_name: string | null;
+  parent_category_id: number | null;
+  expense_code: string;
+  expense_code_id: number;
+  expense_code_description: string;
+  full_category_path: string;
+}
+
+// ============================================================================
+// Payee API Response Types
+// ============================================================================
+
+export interface StaffMember {
+  id: number;
+  full_name: string;
+  email: string;
+}
+
+export interface Vendor {
+  id: number;
+  name: string;
+  vendor_type: string;
+}
+
+export interface CardHolder {
+  id: number;
+  full_name: string;
+  card_last_four: string;
+}

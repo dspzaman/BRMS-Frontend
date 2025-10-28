@@ -1,20 +1,107 @@
 // src/features/requisitions/ui/fields/PerDiemExpenseRow.tsx
 import { useFormContext } from "react-hook-form";
+import { useEffect, useRef } from "react";
 import type { RequisitionFormData } from "../../model/types";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePerDiemExpenseTypes } from "../../api/usePerDiemExpenseTypes";
+import { useMealRates, getRateForDate } from "../../api/useTravelRates";
 
 interface PerDiemExpenseRowProps {
   index: number;
   onRemove: () => void;
   canRemove: boolean;
+  isNewRow?: boolean; // Flag to indicate if this is a newly added row
 }
 
-export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpenseRowProps) {
-  const { register, watch, formState: { errors } } = useFormContext<RequisitionFormData>();
+export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false }: PerDiemExpenseRowProps) {
+  const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
   const { user } = useAuth();
   
   // Get programs from user context
   const programs = user?.programs || [];
+  
+  // Fetch per diem expense types (code 5791 with categories)
+  const { data: perDiemExpenseTypes, isLoading: isLoadingExpenseTypes } = usePerDiemExpenseTypes();
+  
+  // Fetch meal rates (breakfast, lunch, dinner)
+  const { data: mealRates, isLoading: isLoadingRates } = useMealRates();
+  
+  // Watch expense code assignment to check if already set
+  const expenseCodeAssignment = watch(`perDiemExpenses.${index}.expenseCodeAssignment`);
+  
+  // Ref for meal date input to auto-focus
+  const dateRef = useRef<HTMLInputElement>(null);
+  
+  // Watch meal date to update rates
+  const mealDate = watch(`perDiemExpenses.${index}.mealDate`);
+  
+  // Auto-focus meal date when row is newly added
+  useEffect(() => {
+    if (isNewRow && dateRef.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        dateRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isNewRow]);
+  
+  // Get rates for the selected date (or current active rates)
+  const breakfastRate = getRateForDate(mealRates?.breakfast, mealDate || new Date().toISOString().split('T')[0]);
+  const lunchRate = getRateForDate(mealRates?.lunch, mealDate || new Date().toISOString().split('T')[0]);
+  const dinnerRate = getRateForDate(mealRates?.dinner, mealDate || new Date().toISOString().split('T')[0]);
+  
+  // Auto-select the first (and only) per diem expense type as default
+  useEffect(() => {
+    if (perDiemExpenseTypes && perDiemExpenseTypes.length > 0 && !expenseCodeAssignment) {
+      // Auto-select the first option (id: 37)
+      setValue(`perDiemExpenses.${index}.expenseCodeAssignment`, perDiemExpenseTypes[0].id);
+    }
+  }, [perDiemExpenseTypes, expenseCodeAssignment, index, setValue]);
+  
+  // Update form rates whenever they change (for summary calculation)
+  useEffect(() => {
+    setValue(`perDiemExpenses.${index}.breakfastRate`, breakfastRate);
+    setValue(`perDiemExpenses.${index}.lunchRate`, lunchRate);
+    setValue(`perDiemExpenses.${index}.dinnerRate`, dinnerRate);
+  }, [breakfastRate, lunchRate, dinnerRate, index, setValue]);
+  
+  // Watch meal selections to calculate totals
+  const includeBreakfast = watch(`perDiemExpenses.${index}.includeBreakfast`);
+  const includeLunch = watch(`perDiemExpenses.${index}.includeLunch`);
+  const includeDinner = watch(`perDiemExpenses.${index}.includeDinner`);
+  
+  // Calculate and store amount, gstAmount, and totalAmount
+  useEffect(() => {
+    let mealTotal = 0;
+    
+    // Add breakfast if included
+    if (includeBreakfast) {
+      const breakfast = parseFloat(String(breakfastRate || 0));
+      mealTotal += isNaN(breakfast) ? 0 : breakfast;
+    }
+    
+    // Add lunch if included
+    if (includeLunch) {
+      const lunch = parseFloat(String(lunchRate || 0));
+      mealTotal += isNaN(lunch) ? 0 : lunch;
+    }
+    
+    // Add dinner if included
+    if (includeDinner) {
+      const dinner = parseFloat(String(dinnerRate || 0));
+      mealTotal += isNaN(dinner) ? 0 : dinner;
+    }
+    
+    // Per Diem has no GST
+    const gstAmount = 0;
+    const totalAmount = mealTotal;
+    
+    // Update form fields
+    setValue(`perDiemExpenses.${index}.amount`, mealTotal.toFixed(2));
+    setValue(`perDiemExpenses.${index}.gstAmount`, gstAmount.toFixed(2));
+    setValue(`perDiemExpenses.${index}.totalAmount`, totalAmount.toFixed(2));
+  }, [includeBreakfast, includeLunch, includeDinner, breakfastRate, lunchRate, dinnerRate, index, setValue]);
 
   return (
     <div className="border border-gray-300 rounded-lg p-4 bg-white shadow-sm">
@@ -43,7 +130,13 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             <label className="block text-xs font-medium text-gray-700 mb-1">
               Program <span className="text-red-500">*</span>
             </label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500">
+            <select 
+              {...register(`perDiemExpenses.${index}.program`, {
+                required: "Program is required",
+                valueAsNumber: true,
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+            >
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
@@ -63,10 +156,22 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             <label className="block text-xs font-medium text-gray-700 mb-1">
               Expense Type <span className="text-red-500">*</span>
             </label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500">
-              <option value="">Select expense type</option>
-              <option value="1">Admin &gt; Living Expenses - 5791</option>
-              <option value="2">Program Delivery &gt; Living Expenses - 5791</option>
+            <select 
+              {...register(`perDiemExpenses.${index}.expenseCodeAssignment`, {
+                required: "Expense type is required",
+                valueAsNumber: true,
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+              disabled={isLoadingExpenseTypes}
+            >
+              <option value="">
+                {isLoadingExpenseTypes ? 'Loading...' : 'Select expense type'}
+              </option>
+              {perDiemExpenseTypes?.map((expenseType) => (
+                <option key={expenseType.id} value={expenseType.id}>
+                  {expenseType.display_name}
+                </option>
+              ))}
             </select>
             {errors.perDiemExpenses?.[index]?.expenseCodeAssignment && (
               <p className="mt-1 text-xs text-red-600">
@@ -82,6 +187,9 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             </label>
             <input 
               type="date" 
+              {...register(`perDiemExpenses.${index}.mealDate`, {
+                required: "Meal date is required",
+              })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
             />
             {errors.perDiemExpenses?.[index]?.mealDate && (
@@ -102,11 +210,15 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             <label className="flex items-center cursor-pointer">
               <input 
                 type="checkbox" 
+                {...register(`perDiemExpenses.${index}.includeBreakfast`)}
                 id={`breakfast-${index}`}
                 className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600"
+                disabled={isLoadingRates}
               />
               <span className="ml-2 text-sm text-gray-700">
-                Breakfast <span className="font-semibold text-ems-green-700">($28.40)</span>
+                Breakfast <span className="font-semibold text-ems-green-700">
+                  {isLoadingRates ? '(Loading...)' : `($${breakfastRate})`}
+                </span>
               </span>
             </label>
 
@@ -114,11 +226,15 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             <label className="flex items-center cursor-pointer">
               <input 
                 type="checkbox" 
+                {...register(`perDiemExpenses.${index}.includeLunch`)}
                 id={`lunch-${index}`}
                 className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600"
+                disabled={isLoadingRates}
               />
               <span className="ml-2 text-sm text-gray-700">
-                Lunch <span className="font-semibold text-ems-green-700">($27.40)</span>
+                Lunch <span className="font-semibold text-ems-green-700">
+                  {isLoadingRates ? '(Loading...)' : `($${lunchRate})`}
+                </span>
               </span>
             </label>
 
@@ -126,11 +242,15 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             <label className="flex items-center cursor-pointer">
               <input 
                 type="checkbox" 
+                {...register(`perDiemExpenses.${index}.includeDinner`)}
                 id={`dinner-${index}`}
                 className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600"
+                disabled={isLoadingRates}
               />
               <span className="ml-2 text-sm text-gray-700">
-                Dinner <span className="font-semibold text-ems-green-700">($57.70)</span>
+                Dinner <span className="font-semibold text-ems-green-700">
+                  {isLoadingRates ? '(Loading...)' : `($${dinnerRate})`}
+                </span>
               </span>
             </label>
           </div>
@@ -142,6 +262,9 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove }: PerDiemExpense
             Description <span className="text-red-500">*</span>
           </label>
           <textarea 
+            {...register(`perDiemExpenses.${index}.description`, {
+              required: "Description is required",
+            })}
             rows={2}
             placeholder="Purpose of per diem claim (e.g., Conference attendance, Training session)"
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"

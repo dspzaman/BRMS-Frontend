@@ -6,26 +6,60 @@ import type { TravelRate, TravelExpenseType } from './types';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 /**
- * Fetch all travel per kilometer rates from the backend
+ * Generic function to fetch rates by type(s)
+ * @param rateTypes - Comma-separated rate types (e.g., 'travel_per_km' or 'meal_breakfast,meal_lunch,meal_dinner')
  */
-async function fetchTravelRates(): Promise<TravelRate[]> {
-  const response = await apiClient.get<TravelRate[]>(
-    '/api/expense-tracking/form-data/travel-rates/'
+async function fetchRatesByType(rateTypes: string): Promise<Record<string, TravelRate[]>> {
+  const response = await apiClient.get<Record<string, TravelRate[]>>(
+    `/api/expense-tracking/form-data/rates/?rate_type=${rateTypes}`
   );
   return response.data;
 }
 
 /**
- * React Query hook to fetch and cache travel rates
+ * React Query hook to fetch travel per kilometer rates
  */
 export function useTravelRates(): { data: TravelRate[] | undefined; isLoading: boolean; error: any } {
-  return useQuery<TravelRate[]>({
-    queryKey: ['travelRates'],
-    queryFn: fetchTravelRates,
+  const { data, isLoading, error } = useQuery<Record<string, TravelRate[]>>({
+    queryKey: ['rates', 'travel_per_km'],
+    queryFn: () => fetchRatesByType('travel_per_km'),
     staleTime: 5 * 60 * 1000, // 5 minutes - rates don't change often
     cacheTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnWindowFocus: false,
   });
+  
+  return {
+    data: data?.travel_per_km,
+    isLoading,
+    error,
+  };
+}
+
+/**
+ * React Query hook to fetch all meal rates (breakfast, lunch, dinner)
+ */
+export function useMealRates(): { 
+  data: { breakfast?: TravelRate[]; lunch?: TravelRate[]; dinner?: TravelRate[] } | undefined; 
+  isLoading: boolean; 
+  error: any 
+} {
+  const { data, isLoading, error } = useQuery<Record<string, TravelRate[]>>({
+    queryKey: ['rates', 'meal_breakfast,meal_lunch,meal_dinner'],
+    queryFn: () => fetchRatesByType('meal_breakfast,meal_lunch,meal_dinner'),
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  
+  return {
+    data: data ? {
+      breakfast: data.meal_breakfast,
+      lunch: data.meal_lunch,
+      dinner: data.meal_dinner,
+    } : undefined,
+    isLoading,
+    error,
+  };
 }
 
 /**
@@ -61,24 +95,5 @@ export function getRateForDate(rates: TravelRate[] | undefined, date: string): s
   return matchingRate?.rate || '0.68'; // Return rate or default
 }
 
-/**
- * Fetch travel expense types (category + code combinations)
- */
-async function fetchTravelExpenseTypes(): Promise<TravelExpenseType[]> {
-  const response = await apiClient.get<TravelExpenseType[]>(
-    '/api/expense-tracking/form-data/travel-expense-types/'
-  );
-  return response.data;
-}
-
-/**
- * React Query hook to fetch travel expense types
- */
-export function useTravelExpenseTypes(): { data: TravelExpenseType[] | undefined; isLoading: boolean; error: any } {
-  return useQuery<TravelExpenseType[]>({
-    queryKey: ['travelExpenseTypes'],
-    queryFn: fetchTravelExpenseTypes,
-    staleTime: 10 * 60 * 1000, // 10 minutes - rarely changes
-    refetchOnWindowFocus: false,
-  });
-}
+// NOTE: useTravelExpenseTypes has been moved to useExpenseTypes.ts
+// Import from there: import { useTravelExpenseTypes } from './useExpenseTypes';

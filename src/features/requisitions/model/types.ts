@@ -101,6 +101,14 @@ export interface DocumentFormData {
   documentType: DocumentType;
   description: string;
 }
+export interface SupportingDocumentFormData {
+  documentType: 'receipt' | 'invoice' | 'quote' | 'contract' | 'other';
+  file: File | null;
+  fileName?: string;
+  fileSize?: number;
+  description: string;
+  uploadedDocumentId?: number;  // After upload
+}
 
 /**
  * Complete Requisition Form Data
@@ -126,7 +134,14 @@ export interface RequisitionFormData {
   payeeOther: string; // Free text if payeeType = "other"
   
   // Section 5: Supporting Documents
-  documents: DocumentFormData[];
+  //documents: DocumentFormData[];
+  includeSupportingDocuments: boolean;
+  supportingDocuments: SupportingDocumentFormData[];
+  
+  // Financial Summary (auto-calculated, read-only)
+  totalAmount: number; // Sum of all expense amounts (before GST)
+  gstAmount: number; // Sum of all GST amounts
+  totalWithTax: number; // Grand total (totalAmount + gstAmount)
 }
 
 // ============================================================================
@@ -304,91 +319,6 @@ export function getParentCategoryId(
 }
 
 // ============================================================================
-// API REQUEST/RESPONSE TYPES
+// NOTE: API Request/Response types have been moved to api/types.ts
+// Import from there if needed: import type { RequisitionResponse } from '../api/types'
 // ============================================================================
-
-/**
- * Create Requisition Request
- * Data sent to backend when creating a requisition
- */
-export interface CreateRequisitionRequest {
-  requisition_date: string;
-  payee_type: PayeeType;
-  payee_staff?: number | null;
-  payee_vendor?: number | null;
-  payee_contractor?: number | null;
-  payee_office_credit_card?: number | null;
-  payee_other?: string;
-  
-  general_expense_items: Array<{
-    program: number;
-    expense_category: number; // Can be parent OR subcategory
-    expense_code_assignment: number;
-    budget_line_item?: number | null;
-    description: string;
-    amount: string;
-    gst_rate: string;
-  }>;
-  
-  travel_expense_items?: Array<{
-    program: number;
-    budget_line_item?: number | null;
-    distance: string;
-    rate: string;
-    description: string;
-  }>;
-  
-  per_diem_expense_items?: Array<{
-    program: number;
-    budget_line_item?: number | null;
-    start_date: string;
-    end_date: string;
-    breakfast: boolean;
-    lunch: boolean;
-    dinner: boolean;
-    description: string;
-  }>;
-}
-
-/**
- * Requisition Response
- * Data received from backend
- */
-export interface RequisitionResponse {
-  id: number;
-  requisition_number: string;
-  requisition_date: string;
-  current_status: string;
-  total_amount: string;
-  created_by: {
-    id: number;
-    full_name: string;
-  };
-  created_at: string;
-  updated_at: string;
-  // ... add more fields as needed
-}
-
-/**
- * Requisition List Response (paginated)
- */
-export interface RequisitionListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: RequisitionResponse[];
-}
-
-/**
- * Requisition List Query Params
- */
-export interface RequisitionListParams {
-  page?: number;
-  page_size?: number;
-  status?: string;
-  created_by?: number;
-  program?: number;
-  date_from?: string;
-  date_to?: string;
-  search?: string;
-}

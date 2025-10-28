@@ -1,18 +1,20 @@
 // src/features/requisitions/ui/fields/TravelExpenseRow.tsx
 import { useFormContext } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { RequisitionFormData } from "../../model/types";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { useTravelRates, getRateForDate, useTravelExpenseTypes } from "../../api/useTravelRates";
+import { useTravelRates, getRateForDate } from "../../api/useTravelRates";
+import { useTravelExpenseTypes } from "../../api/usePerDiemExpenseTypes";
 import { apiClient } from "@/shared/api/client";
 
 interface TravelExpenseRowProps {
   index: number;
   onRemove: () => void;
   canRemove: boolean;
+  isNewRow?: boolean; // Flag to indicate if this is a newly added row
 }
 
-export function TravelExpenseRow({ index, onRemove, canRemove }: TravelExpenseRowProps) {
+export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false }: TravelExpenseRowProps) {
   const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
   const { user } = useAuth();
   
@@ -35,9 +37,11 @@ export function TravelExpenseRow({ index, onRemove, canRemove }: TravelExpenseRo
   const startAddress = watch(`travelExpenses.${index}.startAddress`);
   const endAddress = watch(`travelExpenses.${index}.endAddress`);
   
+  // Ref for travel date input to auto-focus
+  const dateRef = useRef<HTMLInputElement>(null);
+  
   // Address autocomplete state
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   
   // Fetch address suggestions
   const fetchAddressSuggestions = async (query: string) => {
@@ -46,7 +50,6 @@ export function TravelExpenseRow({ index, onRemove, canRemove }: TravelExpenseRo
       return;
     }
     
-    setIsLoadingAddresses(true);
     try {
       const response = await apiClient.get<string[]>(
         '/api/expense-tracking/form-data/travel-address-suggestions/',
@@ -56,8 +59,6 @@ export function TravelExpenseRow({ index, onRemove, canRemove }: TravelExpenseRo
     } catch (error) {
       console.error('Failed to fetch address suggestions:', error);
       setAddressSuggestions([]);
-    } finally {
-      setIsLoadingAddresses(false);
     }
   };
   
@@ -74,6 +75,17 @@ export function TravelExpenseRow({ index, onRemove, canRemove }: TravelExpenseRo
       fetchAddressSuggestions(endAddress);
     }
   }, [endAddress]);
+
+  // Auto-focus travel date when row is newly added
+  useEffect(() => {
+    if (isNewRow && dateRef.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        dateRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isNewRow]);
 
   // Auto-select Program Delivery travel type as default
   useEffect(() => {
@@ -95,6 +107,27 @@ export function TravelExpenseRow({ index, onRemove, canRemove }: TravelExpenseRo
       setValue(`travelExpenses.${index}.ratePerKm`, rate);
     }
   }, [travelDate, travelRates, index, setValue]);
+  
+  // Calculate and store amount, gstAmount, and totalAmount
+  useEffect(() => {
+    const km = parseFloat(String(totalKm || 0));
+    const rate = parseFloat(String(ratePerKm || 0));
+    const gst = parseFloat(String(watch(`travelExpenses.${index}.gstRate`) || 0));
+    
+    // Calculate amount (km * rate)
+    const amount = isNaN(km) || isNaN(rate) ? 0 : km * rate;
+    
+    // GST is 0 for travel expenses
+    const gstAmount = 0;
+    
+    // Total amount
+    const totalAmount = amount + gstAmount;
+    
+    // Update form fields
+    setValue(`travelExpenses.${index}.amount`, amount.toFixed(2));
+    setValue(`travelExpenses.${index}.gstAmount`, gstAmount.toFixed(2));
+    setValue(`travelExpenses.${index}.totalAmount`, totalAmount.toFixed(2));
+  }, [totalKm, ratePerKm, index, setValue, watch]);
   
   // Calculate amount: totalKm × ratePerKm
   const calculateAmount = () => {

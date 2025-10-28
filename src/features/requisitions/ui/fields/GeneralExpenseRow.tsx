@@ -1,4 +1,5 @@
 // src/features/requisitions/ui/fields/GeneralExpenseRow.tsx
+import { useMemo, useRef, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import type { RequisitionFormData } from "../../model/types";
 import { useFormData } from "../../model/useFormData";
@@ -8,14 +9,30 @@ interface GeneralExpenseRowProps {
   index: number;
   onRemove: () => void;
   canRemove: boolean;
+  isNewRow?: boolean; // Flag to indicate if this is a newly added row
 }
 
-export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpenseRowProps) {
-  const { register, watch, formState: { errors } } = useFormContext<RequisitionFormData>();
+export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false }: GeneralExpenseRowProps) {
+  const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
   const { user } = useAuth();
+  
+  // Ref for category dropdown to auto-focus
+  const categoryRef = useRef<HTMLSelectElement>(null);
   
   // Watch the selected category to filter expense codes
   const selectedCategory = watch(`generalExpenses.${index}.category`);
+  const selectedProgram = watch(`generalExpenses.${index}.program`);
+  
+  // Auto-focus category dropdown when row is added and program is already selected
+  useEffect(() => {
+    if (isNewRow && categoryRef.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        categoryRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isNewRow]);
   
   // Get programs from user context
   const programs = user?.programs || [];
@@ -32,20 +49,22 @@ export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpense
   const amount = watch(`generalExpenses.${index}.amount`);
   const gst = watch(`generalExpenses.${index}.gstRate`);
   
-  // Calculate total: amount + GST
-  const calculateTotal = () => {
+  // Calculate total: amount + GST (memoized)
+  const totalAmount = useMemo(() => {
     const amountNum = parseFloat(amount) || 0;
     const gstNum = parseFloat(gst) || 0;
     return (amountNum + gstNum).toFixed(2);
-  };
+  }, [amount, gst]);
 
-  // Check which parent categories have subcategories
-  const parentCategoriesWithChildren = categories
-    .filter(c => c.is_main_category)
-    .map(parent => ({
-      id: parent.id,
-      hasChildren: categories.some(c => c.is_subcategory && c.parent_id === parent.id)
-    }));
+  // Check which parent categories have subcategories (memoized)
+  const parentCategoriesWithChildren = useMemo(() => {
+    return categories
+      .filter(c => c.is_main_category)
+      .map(parent => ({
+        id: parent.id,
+        hasChildren: categories.some(c => c.is_subcategory && c.parent_id === parent.id)
+      }));
+  }, [categories]);
 
   // Helper function to check if a category should be disabled
   const shouldDisableCategory = (category: typeof categories[0]) => {
@@ -53,6 +72,7 @@ export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpense
     const parentInfo = parentCategoriesWithChildren.find(p => p.id === category.id);
     return parentInfo?.hasChildren || false; // Only disable if it has children
   };
+  const gstValuePh = watch(`generalExpenses.${index}.gstRate`);
 
   return (
     <div className="grid grid-cols-[1fr_1fr_1fr_2fr_1fr_1fr_1fr_100px] gap-3 px-3 py-2 border-b border-gray-200">
@@ -84,8 +104,12 @@ export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpense
         <select 
           {...register(`generalExpenses.${index}.category`, {
             required: "Category is required",
-            valueAsNumber: true,
           })}
+          onChange={(e) => {
+            const value = e.target.value === "" ? null : parseInt(e.target.value, 10);
+            setValue(`generalExpenses.${index}.category`, value);
+          }}
+          ref={categoryRef}
           className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
           disabled={isLoadingCategories}
         >
@@ -164,7 +188,7 @@ export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpense
             min: { value: 0.01, message: "Amount must be greater than 0" },
           })}
           className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
-          placeholder="0.00"
+          placeholder="Amount"
         />
         {errors.generalExpenses?.[index]?.amount && (
           <p className="mt-1 text-xs text-red-600">
@@ -176,13 +200,23 @@ export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpense
       {/* GST */}
       <div>
         <input
-          type="number"
-          step="0.01"
+          type="text"
           {...register(`generalExpenses.${index}.gstRate`, {
-            min: { value: 0, message: "GST cannot be negative" },
+            pattern: {
+              value: /^\d*\.?\d*$/,
+              message: "GST must be a valid number"
+            },
+            validate: (value) => {
+              if (!value || value === '') return true; // Optional field
+              const num = parseFloat(value);
+              if (isNaN(num)) return "GST must be a valid number";
+              if (num < 0) return "GST cannot be negative";
+              return true;
+            }
           })}
           className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
-          placeholder="0.00"
+          placeholder="GST"
+          inputMode="decimal"
         />
         {errors.generalExpenses?.[index]?.gstRate && (
           <p className="mt-1 text-xs text-red-600">
@@ -195,7 +229,7 @@ export function GeneralExpenseRow({ index, onRemove, canRemove }: GeneralExpense
       <div>
         <input
           type="text"
-          value={calculateTotal()}
+          value={totalAmount}
           className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm bg-gray-50 focus:outline-none font-semibold text-gray-900"
           placeholder="0.00"
           readOnly
