@@ -9,6 +9,10 @@ import ForgotPassword from "@/pages/Login/ForgotPassword";
 import ResetPassword from "@/pages/Login/ResetPassword";
 import ProfilePage from "@/pages/Profile/ProfilePage";
 import CreateRequisition from "@/pages/Requisitions/CreateRequisition";
+import MyRequisitionsPage from "@/pages/Requisitions/MyRequisitionsPage";
+import AssignedRequisitionsPage from "@/pages/Requisitions/AssignedRequisitionsPage";
+import EditRequisitionPage from "@/pages/Requisitions/EditRequisitionPage";
+import ViewRequisitionPage from "@/pages/Requisitions/ViewRequisitionPage";
 
 /**
  * Protects routes that require authentication.
@@ -111,6 +115,42 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CreateRequisition />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/requisitions/my-requisitions"
+        element={
+          <ProtectedRoute>
+            <MyRequisitionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/requisitions/assigned"
+        element={
+          <ProtectedRoute>
+            <AssignedRequisitionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/requisitions/edit/:id"
+        element={
+          <ProtectedRoute>
+            <EditRequisitionPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/requisitions/view/:id"
+        element={
+          <ProtectedRoute>
+            <ViewRequisitionPage />
           </ProtectedRoute>
         }
       />

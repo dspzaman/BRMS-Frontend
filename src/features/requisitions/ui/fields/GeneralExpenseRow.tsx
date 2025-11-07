@@ -23,6 +23,9 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
   const selectedCategory = watch(`generalExpenses.${index}.category`);
   const selectedProgram = watch(`generalExpenses.${index}.program`);
   
+  // Track previous category to detect manual changes
+  const prevCategory = useRef(selectedCategory);
+  
   // Auto-focus category dropdown when row is added and program is already selected
   useEffect(() => {
     if (isNewRow && categoryRef.current) {
@@ -33,6 +36,14 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
       return () => clearTimeout(timer);
     }
   }, [isNewRow]);
+  
+  // Clear expense code when category changes (but not on initial load)
+  useEffect(() => {
+    if (prevCategory.current !== undefined && prevCategory.current !== selectedCategory) {
+      setValue(`generalExpenses.${index}.expenseCode`, null);
+    }
+    prevCategory.current = selectedCategory;
+  }, [selectedCategory, setValue, index]);
   
   // Get programs from user context
   const programs = user?.programs || [];
@@ -104,7 +115,9 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
         <select 
           {...register(`generalExpenses.${index}.category`, {
             required: "Category is required",
+            valueAsNumber: true,
           })}
+          value={selectedCategory || ""}
           onChange={(e) => {
             const value = e.target.value === "" ? null : parseInt(e.target.value, 10);
             setValue(`generalExpenses.${index}.category`, value);
@@ -134,10 +147,15 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
       {/* Expense Code */}
       <div>
         <select 
-          {...register(`generalExpenses.${index}.expenseCodeAssignment`, {
+          {...register(`generalExpenses.${index}.expenseCode`, {
             required: "Expense code is required",
             valueAsNumber: true,
           })}
+          value={watch(`generalExpenses.${index}.expenseCode`) || ""}
+          onChange={(e) => {
+            const value = e.target.value === "" ? null : parseInt(e.target.value, 10);
+            setValue(`generalExpenses.${index}.expenseCode`, value);
+          }}
           className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
           disabled={!selectedCategory || isLoadingExpenseCodes}
         >
@@ -154,9 +172,9 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
             </option>
           ))}
         </select>
-        {errors.generalExpenses?.[index]?.expenseCodeAssignment && (
+        {errors.generalExpenses?.[index]?.expenseCode && (
           <p className="mt-1 text-xs text-red-600">
-            {errors.generalExpenses[index]?.expenseCodeAssignment?.message}
+            {errors.generalExpenses[index]?.expenseCode?.message}
           </p>
         )}
       </div>

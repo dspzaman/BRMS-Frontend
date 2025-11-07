@@ -1,27 +1,37 @@
 import { useFormContext } from "react-hook-form";
 import type { RequisitionFormData } from "../../model/types";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface SupportingDocumentRowProps {
   index: number;
   onRemove: () => void;
   canRemove: boolean;
-  requisitionId?: number;  // For upload after draft save
+  isNewRow?: boolean; // Flag to indicate if this is a newly added row
 }
 
 export function SupportingDocumentRow({ 
   index, 
   onRemove, 
   canRemove,
-  requisitionId 
+  isNewRow = false
 }: SupportingDocumentRowProps) {
   const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Watch the file to show preview
-  const selectedFile = watch(`supportingDocuments.${index}.file`);
   const fileName = watch(`supportingDocuments.${index}.fileName`);
-  
+  const fileUrl = watch(`supportingDocuments.${index}.fileUrl`); // For existing documents when editing
+
+  // Auto-focus file input when row is newly added
+  useEffect(() => {
+    if (isNewRow && fileInputRef.current) {
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 100);
+    }
+  }, [isNewRow]);
+
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,7 +39,7 @@ export function SupportingDocumentRow({
       setValue(`supportingDocuments.${index}.file`, file);
       setValue(`supportingDocuments.${index}.fileName`, file.name);
       setValue(`supportingDocuments.${index}.fileSize`, file.size);
-      
+
       // Create preview for images
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -42,7 +52,7 @@ export function SupportingDocumentRow({
       }
     }
   };
-  
+
   // Format file size
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return '';
@@ -103,6 +113,7 @@ export function SupportingDocumentRow({
               File <span className="text-red-500">*</span>
             </label>
             <input 
+              ref={fileInputRef}
               type="file"
               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
               onChange={handleFileChange}
@@ -135,9 +146,9 @@ export function SupportingDocumentRow({
             <div className="flex items-start gap-3">
               {/* File Icon/Preview */}
               <div className="flex-shrink-0">
-                {filePreview ? (
+                {filePreview || fileUrl ? (
                   <img 
-                    src={filePreview} 
+                    src={filePreview || fileUrl} 
                     alt="Preview" 
                     className="w-16 h-16 object-cover rounded border border-gray-300"
                   />
@@ -149,7 +160,7 @@ export function SupportingDocumentRow({
                   </div>
                 )}
               </div>
-              
+
               {/* File Info */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
@@ -158,6 +169,14 @@ export function SupportingDocumentRow({
                 <p className="text-xs text-gray-500 mt-1">
                   {formatFileSize(watch(`supportingDocuments.${index}.fileSize`))}
                 </p>
+
+                {/* File Selected Indicator */}
+                <div className="mt-2 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-xs text-green-600 font-medium">File selected - will upload when saving</span>
+                </div>
               </div>
             </div>
           </div>

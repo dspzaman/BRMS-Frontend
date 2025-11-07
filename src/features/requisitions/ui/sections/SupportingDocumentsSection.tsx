@@ -2,6 +2,11 @@ import { useFormContext, useFieldArray } from "react-hook-form";
 import type { RequisitionFormData } from "../../model/types";
 import { SupportingDocumentRow } from "../fields/SupportingDocumentRow";
 import { EmptyState } from "../shared/EmptyState";
+import { useState, useEffect } from "react";
+import { ROW_LIMITS, ROW_LIMIT_MESSAGES } from "../../model/constants";
+
+interface SupportingDocumentsSectionProps {
+}
 
 export function SupportingDocumentsSection() {
   const { control, watch } = useFormContext<RequisitionFormData>();
@@ -15,8 +20,25 @@ export function SupportingDocumentsSection() {
   // Watch all documents to show count
   const supportingDocuments = watch("supportingDocuments");
   
+  // Track the index of the most recently added row for auto-focus
+  const [newRowIndex, setNewRowIndex] = useState<number | null>(null);
+  
+  // Clear newRowIndex after a short delay
+  useEffect(() => {
+    if (newRowIndex !== null) {
+      const timer = setTimeout(() => setNewRowIndex(null), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [newRowIndex]);
+  
   // Add new document row
   const handleAddDocument = () => {
+    // Check row limit
+    if (fields.length >= ROW_LIMITS.SUPPORTING_DOCUMENTS) {
+      alert(ROW_LIMIT_MESSAGES.SUPPORTING_DOCUMENTS);
+      return;
+    }
+
     append({
       documentType: 'receipt',
       file: null,
@@ -24,7 +46,13 @@ export function SupportingDocumentsSection() {
       fileSize: 0,
       description: '',
     });
+    
+    // Mark the newly added row index for auto-focus
+    setNewRowIndex(fields.length);
   };
+
+  // Check if we've reached the row limit
+  const isAtRowLimit = fields.length >= ROW_LIMITS.SUPPORTING_DOCUMENTS;
   
   // Calculate total file size
   const calculateTotalSize = () => {
@@ -78,6 +106,7 @@ export function SupportingDocumentsSection() {
                 index={index}
                 onRemove={() => remove(index)}
                 canRemove={true} // Always allow removal for documents
+                isNewRow={index === newRowIndex} // Pass flag for newly added row
               />
             ))}
           </div>
@@ -95,7 +124,13 @@ export function SupportingDocumentsSection() {
                   <button
                     type="button"
                     onClick={handleAddDocument}
-                    className="text-sm text-ems-green-600 hover:text-ems-green-700 font-medium"
+                    disabled={isAtRowLimit}
+                    title={isAtRowLimit ? ROW_LIMIT_MESSAGES.SUPPORTING_DOCUMENTS : undefined}
+                    className={`text-sm font-medium ${
+                      isAtRowLimit
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-ems-green-600 hover:text-ems-green-700'
+                    }`}
                   >
                     + Add Another Document
                   </button>

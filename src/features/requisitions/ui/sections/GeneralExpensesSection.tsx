@@ -7,6 +7,7 @@ import { getDefaultProgram } from "../../utils/programUtils";
 import { EmptyState } from "../shared/EmptyState";
 import { SummaryCard } from "../shared/SummaryCard";
 import { useState, useEffect } from "react";
+import { ROW_LIMITS, ROW_LIMIT_MESSAGES } from "../../model/constants";
 
 export function GeneralExpensesSection() {
   const { control, watch } = useFormContext<RequisitionFormData>();
@@ -37,6 +38,12 @@ export function GeneralExpensesSection() {
 
   // Add new expense row
   const handleAddExpense = () => {
+    // Check row limit
+    if (fields.length >= ROW_LIMITS.GENERAL_EXPENSES) {
+      alert(ROW_LIMIT_MESSAGES.GENERAL_EXPENSES);
+      return;
+    }
+
     const defaultProgram = getDefaultProgram(programs);
 
     
@@ -44,7 +51,7 @@ export function GeneralExpensesSection() {
       program: defaultProgram,
       budget: null,
       category: null,
-      expenseCodeAssignment: null,
+      expenseCode: null,
       amount: "",
       gstRate: "",
       description: "",
@@ -53,6 +60,9 @@ export function GeneralExpensesSection() {
     // Mark the newly added row index for auto-focus
     setNewRowIndex(fields.length);
   };
+
+  // Check if we've reached the row limit
+  const isAtRowLimit = fields.length >= ROW_LIMITS.GENERAL_EXPENSES;
   
   // Calculate summary totals
   const calculateTotals = () => {
@@ -94,28 +104,17 @@ export function GeneralExpensesSection() {
         
       </div>
 
-      {/* Expense Rows */}
+      {/* Expense Rows - Always show (General Expenses is the primary expense type) */}
       <div className="space-y-4">
-        {fields.length === 0 ? (
-          <EmptyState
-            title="No expenses added"
-            description="Get started by adding your first general expense."
-            buttonText="Add First Expense"
-            onAddClick={handleAddExpense}
-            icon="document"
+        {fields.map((field, index) => (
+          <GeneralExpenseRow
+            key={field.id}
+            index={index}
+            onRemove={() => remove(index)}
+            canRemove={fields.length > 1} // Can't remove if only 1 row
+            isNewRow={index === newRowIndex} // Pass flag for newly added row
           />
-        ) : (
-          // Render expense rows
-          fields.map((field, index) => (
-            <GeneralExpenseRow
-              key={field.id}
-              index={index}
-              onRemove={() => remove(index)}
-              canRemove={fields.length > 1} // Can't remove if only 1 row
-              isNewRow={index === newRowIndex} // Pass flag for newly added row
-            />
-          ))
-        )}
+        ))}
       </div>
 
       {/* Summary (if expenses exist) */}
@@ -126,6 +125,8 @@ export function GeneralExpensesSection() {
           totalGST={totalGST}
           grandTotal={grandTotal}
           onAddClick={handleAddExpense}
+          isAddDisabled={isAtRowLimit}
+          addButtonTooltip={isAtRowLimit ? ROW_LIMIT_MESSAGES.GENERAL_EXPENSES : undefined}
         />
       )}
     </div>

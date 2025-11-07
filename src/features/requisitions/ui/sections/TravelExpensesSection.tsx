@@ -1,6 +1,7 @@
 // src/features/requisitions/ui/sections/TravelExpensesSection.tsx
 import { useFormContext, useFieldArray } from "react-hook-form";
 import type { RequisitionFormData } from "../../model/types";
+import { ROW_LIMITS, ROW_LIMIT_MESSAGES } from "../../model/constants";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { TravelExpenseRow } from "../fields/TravelExpenseRow";
 import { getDefaultProgram } from "../../utils/programUtils";
@@ -37,13 +38,19 @@ export function TravelExpensesSection() {
   
   // Add new travel expense row
   const handleAddExpense = () => {
+    // Check row limit
+    if (fields.length >= ROW_LIMITS.TRAVEL_EXPENSES) {
+      alert(ROW_LIMIT_MESSAGES.TRAVEL_EXPENSES);
+      return;
+    }
+
     const defaultProgram = getDefaultProgram(programs);
 
     
     append({
       program: defaultProgram,
       category: null,
-      expenseCodeAssignment: null,
+      expenseCode: null,
       travelDate: "",
       startAddress: "",
       endAddress: "",
@@ -59,6 +66,9 @@ export function TravelExpensesSection() {
     // Mark the newly added row index for auto-focus
     setNewRowIndex(fields.length);
   };
+
+  // Check if we've reached the row limit
+  const isAtRowLimit = fields.length >= ROW_LIMITS.TRAVEL_EXPENSES;
   
   // Calculate summary totals
   const calculateTotals = () => {
@@ -132,6 +142,8 @@ export function TravelExpensesSection() {
           grandTotal={grandTotal}
           onAddClick={handleAddExpense}
           itemLabel="Total Travel Items"
+          isAddDisabled={isAtRowLimit}
+          addButtonTooltip={isAtRowLimit ? ROW_LIMIT_MESSAGES.TRAVEL_EXPENSES : undefined}
         />
       )}
 

@@ -9,6 +9,8 @@ interface SummaryCardProps {
   addButtonText?: string;
   itemLabel?: string;
   mealCount?: number; // Optional for Per Diem
+  isAddDisabled?: boolean; // Disable add button when row limit reached
+  addButtonTooltip?: string; // Tooltip message when disabled
 }
 
 export function SummaryCard({
@@ -20,6 +22,8 @@ export function SummaryCard({
   addButtonText = "+ Add Another Expense",
   itemLabel = "Total Expense Items",
   mealCount,
+  isAddDisabled = false,
+  addButtonTooltip,
 }: SummaryCardProps) {
   return (
     <div className="mt-6 pt-6 border-t border-gray-200">
@@ -39,7 +43,13 @@ export function SummaryCard({
             <button
               type="button"
               onClick={onAddClick}
-              className="text-sm text-ems-green-600 hover:text-ems-green-700 font-medium"
+              disabled={isAddDisabled}
+              title={isAddDisabled ? addButtonTooltip : undefined}
+              className={`text-sm font-medium ${
+                isAddDisabled
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-ems-green-600 hover:text-ems-green-700'
+              }`}
             >
               {addButtonText}
             </button>

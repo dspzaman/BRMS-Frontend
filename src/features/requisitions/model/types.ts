@@ -23,7 +23,7 @@ export interface GeneralExpenseFormData {
   
   // Category selection (single dropdown - can be parent OR child)
   category: number | null; // ExpenseCategory ID (parent or subcategory)
-  expenseCodeAssignment: number | null; // ExpenseCodeAssignment ID
+  expenseCode: number | null; // ExpenseCode ID (actual expense code to send to backend)
   
   // Expense details
   amount: string; // Base amount before GST
@@ -43,9 +43,9 @@ export interface TravelExpenseFormData {
   // Program tracking
   program: number | null;
   
-  // Category and expense code assignment
-  category: number | null; // Optional - can be derived from expenseCodeAssignment
-  expenseCodeAssignment: number | null; // ExpenseCodeAssignment ID (category + code combination)
+  // Category and expense code
+  category: number | null; // ExpenseCategory ID
+  expenseCode: number | null; // ExpenseCode ID (actual expense code to send to backend)
   
   // Travel details
   travelDate: string; // ISO date string (YYYY-MM-DD)
@@ -70,8 +70,9 @@ export interface PerDiemExpenseFormData {
   // Program tracking
   program: number | null;
   
-  // Category and expense code assignment
-  expenseCodeAssignment: number | null; // ExpenseCodeAssignment ID (category + code combination for 5791)
+  // Category and expense code
+  category: number | null; // ExpenseCategory ID
+  expenseCode: number | null; // ExpenseCode ID (actual expense code to send to backend)
   
   // Per diem details
   mealDate: string; // Single date (YYYY-MM-DD) - backend has meal_date field
@@ -102,12 +103,15 @@ export interface DocumentFormData {
   description: string;
 }
 export interface SupportingDocumentFormData {
+  id?: number; // For existing documents when editing
   documentType: 'receipt' | 'invoice' | 'quote' | 'contract' | 'other';
   file: File | null;
   fileName?: string;
   fileSize?: number;
+  fileUrl?: string; // URL to the uploaded file
+  uploadedDocumentId?: number;  // Document ID after upload
+  uploadedAt?: string; // Upload timestamp
   description: string;
-  uploadedDocumentId?: number;  // After upload
 }
 
 /**
@@ -137,6 +141,9 @@ export interface RequisitionFormData {
   //documents: DocumentFormData[];
   includeSupportingDocuments: boolean;
   supportingDocuments: SupportingDocumentFormData[];
+  
+  // Section 6: Comments (optional - for Submit/Forward actions)
+  comments?: string; // Optional comments for status changes
   
   // Financial Summary (auto-calculated, read-only)
   totalAmount: number; // Sum of all expense amounts (before GST)

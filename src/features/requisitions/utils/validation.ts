@@ -19,7 +19,7 @@ export const validateGeneralExpenses = (
     
     if (!expense.program) return `General Expense #${i + 1}: Program is required`;
     if (!expense.category) return `General Expense #${i + 1}: Category is required`;
-    if (!expense.expenseCodeAssignment) return `General Expense #${i + 1}: Expense code is required`;
+    if (!expense.expenseCode) return `General Expense #${i + 1}: Expense code is required`;
     if (!expense.description || expense.description.trim() === '') return `General Expense #${i + 1}: Description is required`;
     if (!expense.amount || parseFloat(String(expense.amount)) <= 0) return `General Expense #${i + 1}: Amount is required and must be greater than 0`;
   }
@@ -44,7 +44,7 @@ export const validateTravelExpenses = (
     const expense = expenses[i];
     
     if (!expense.program) return `Travel Expense #${i + 1}: Program is required`;
-    if (!expense.expenseCodeAssignment) return `Travel Expense #${i + 1}: Expense code is required`;
+    if (!expense.expenseCode) return `Travel Expense #${i + 1}: Expense code is required`;
     if (!expense.travelDate) return `Travel Expense #${i + 1}: Travel date is required`;
     if (!expense.startAddress || expense.startAddress.trim() === '') return `Travel Expense #${i + 1}: From address is required`;
     if (!expense.endAddress || expense.endAddress.trim() === '') return `Travel Expense #${i + 1}: To address is required`;
@@ -72,7 +72,7 @@ export const validatePerDiemExpenses = (
     const expense = expenses[i];
     
     if (!expense.program) return `Per Diem Expense #${i + 1}: Program is required`;
-    if (!expense.expenseCodeAssignment) return `Per Diem Expense #${i + 1}: Expense code is required`;
+    if (!expense.expenseCode) return `Per Diem Expense #${i + 1}: Expense code is required`;
     if (!expense.mealDate) return `Per Diem Expense #${i + 1}: Meal date is required`;
     if (!expense.includeBreakfast && !expense.includeLunch && !expense.includeDinner) return `Per Diem Expense #${i + 1}: At least one meal type must be selected`;
     if (!expense.description || expense.description.trim() === '') return `Per Diem Expense #${i + 1}: Description is required`;
@@ -116,7 +116,14 @@ export const validateSupportingDocuments = (
   for (let i = 0; i < documents.length; i++) {
     const doc = documents[i];
     if (!doc.documentType) return `Document #${i + 1}: Document type is required`;
-    if (!doc.file) return `Document #${i + 1}: File must be uploaded`;
+    
+    // Check if document has either a new file OR is an existing document
+    const hasNewFile = doc.file instanceof File;
+    const hasExistingDocument = doc.id || doc.fileUrl || doc.uploadedDocumentId;
+    
+    if (!hasNewFile && !hasExistingDocument) {
+      return `Document #${i + 1}: File must be uploaded`;
+    }
   }
   
   return null;

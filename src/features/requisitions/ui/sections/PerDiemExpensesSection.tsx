@@ -2,6 +2,7 @@
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { useState, useEffect } from "react";
 import type { RequisitionFormData } from "../../model/types";
+import { ROW_LIMITS, ROW_LIMIT_MESSAGES } from "../../model/constants";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { PerDiemExpenseRow } from "../fields/PerDiemExpenseRow";
 import { getDefaultProgram } from "../../utils/programUtils";
@@ -37,12 +38,19 @@ export function PerDiemExpensesSection() {
   
   // Add new per diem expense row
   const handleAddExpense = () => {
+    // Check row limit
+    if (fields.length >= ROW_LIMITS.PER_DIEM_EXPENSES) {
+      alert(ROW_LIMIT_MESSAGES.PER_DIEM_EXPENSES);
+      return;
+    }
+
     const defaultProgram = getDefaultProgram(programs);
 
     
     append({
       program: defaultProgram,
-      expenseCodeAssignment: null,
+      category: null,
+      expenseCode: null,
       mealDate: "",
       includeBreakfast: false,
       includeLunch: false,
@@ -60,6 +68,9 @@ export function PerDiemExpensesSection() {
     // Mark the newly added row index for auto-focus
     setNewRowIndex(fields.length);
   };
+
+  // Check if we've reached the row limit
+  const isAtRowLimit = fields.length >= ROW_LIMITS.PER_DIEM_EXPENSES;
   
   // Calculate summary totals based on meal selections
   const calculateTotals = () => {
@@ -150,6 +161,8 @@ export function PerDiemExpensesSection() {
           onAddClick={handleAddExpense}
           itemLabel="Total Per Diem Items"
           mealCount={mealCount}
+          isAddDisabled={isAtRowLimit}
+          addButtonTooltip={isAtRowLimit ? ROW_LIMIT_MESSAGES.PER_DIEM_EXPENSES : undefined}
         />
       )}
     </div>

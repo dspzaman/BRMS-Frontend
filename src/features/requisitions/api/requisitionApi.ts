@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient } from '@/shared/api/client';
 import type {
   RequisitionResponse,
   RequisitionListResponse,
@@ -27,7 +27,7 @@ const BASE_URL = '/api/requisition-management';
 export const getRequisitions = async (
   params?: RequisitionListParams
 ): Promise<RequisitionListResponse> => {
-  const response = await axios.get<RequisitionListResponse>(
+  const response = await apiClient.get<RequisitionListResponse>(
     `${BASE_URL}/requisitions/`,
     { params }
   );
@@ -38,7 +38,7 @@ export const getRequisitions = async (
  * Get a single requisition by ID
  */
 export const getRequisition = async (id: number): Promise<RequisitionResponse> => {
-  const response = await axios.get<RequisitionResponse>(
+  const response = await apiClient.get<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/`
   );
   return response.data;
@@ -50,7 +50,7 @@ export const getRequisition = async (id: number): Promise<RequisitionResponse> =
 export const createRequisition = async (
   data: CreateRequisitionRequest
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/`,
     data
   );
@@ -64,7 +64,7 @@ export const updateRequisition = async (
   id: number,
   data: Partial<UpdateRequisitionRequest>
 ): Promise<RequisitionResponse> => {
-  const response = await axios.patch<RequisitionResponse>(
+  const response = await apiClient.patch<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/`,
     data
   );
@@ -75,17 +75,89 @@ export const updateRequisition = async (
  * Delete a requisition (only drafts)
  */
 export const deleteRequisition = async (id: number): Promise<void> => {
-  await axios.delete(`${BASE_URL}/requisitions/${id}/`);
+  await apiClient.delete(`${BASE_URL}/requisitions/${id}/`);
 };
 
 /**
  * Save requisition as draft
+ * Handles both JSON data and file uploads (multipart/form-data)
  */
 export const saveAsDraft = async (
-  data: CreateRequisitionRequest
+  data: CreateRequisitionRequest,
+  files?: { index: number; file: File; documentType: string; description: string }[]
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  // If files are present, use FormData for multipart upload
+  if (files && files.length > 0) {
+    const formData = new FormData();
+    
+    // Append JSON data as a string (Django will parse it)
+    formData.append('data', JSON.stringify(data));
+    
+    // Append each file with metadata
+    files.forEach((fileData) => {
+      formData.append(`document_${fileData.index}_file`, fileData.file);
+      formData.append(`document_${fileData.index}_type`, fileData.documentType);
+      formData.append(`document_${fileData.index}_description`, fileData.description);
+    });
+    
+    const response = await apiClient.post<RequisitionResponse>(
+      `${BASE_URL}/requisitions/save-as-draft/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  }
+  
+  // No files - send as regular JSON
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/save-as-draft/`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * Update an existing draft requisition
+ * Handles both JSON data and file uploads (multipart/form-data)
+ */
+export const updateDraft = async (
+  id: number,
+  data: CreateRequisitionRequest,
+  files?: { index: number; file: File; documentType: string; description: string }[]
+): Promise<RequisitionResponse> => {
+  // If files are present, use FormData for multipart upload
+  if (files && files.length > 0) {
+    const formData = new FormData();
+    
+    // Append JSON data as a string (Django will parse it)
+    formData.append('data', JSON.stringify(data));
+    
+    // Append each file with metadata
+    files.forEach((fileData) => {
+      formData.append(`document_${fileData.index}_file`, fileData.file);
+      formData.append(`document_${fileData.index}_type`, fileData.documentType);
+      formData.append(`document_${fileData.index}_description`, fileData.description);
+    });
+    
+    const response = await apiClient.post<RequisitionResponse>(
+      `${BASE_URL}/requisitions/${id}/update-draft/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  }
+  
+  // No files - send as regular JSON
+  const response = await apiClient.post<RequisitionResponse>(
+    `${BASE_URL}/requisitions/${id}/update-draft/`,
     data
   );
   return response.data;
@@ -95,7 +167,7 @@ export const saveAsDraft = async (
  * Get current user's draft requisitions
  */
 export const getMyDrafts = async (): Promise<RequisitionResponse[]> => {
-  const response = await axios.get<RequisitionResponse[]>(
+  const response = await apiClient.get<RequisitionResponse[]>(
     `${BASE_URL}/requisitions/my-drafts/`
   );
   return response.data;
@@ -113,11 +185,11 @@ export const submitRequisition = async (
   id: number,
   data?: SubmitRequisitionRequest
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/submit/`,
     data
   );
-  return response.data;
+  return response.data.requisition;
 };
 
 /**
@@ -128,11 +200,11 @@ export const forwardRequisition = async (
   id: number,
   data: ForwardRequisitionRequest
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
-    `${BASE_URL}/requisitions/${id}/forward/`,
+  const response = await apiClient.post<{ message: string; requisition: RequisitionResponse }>(
+    `${BASE_URL}/requisitions/${id}/forward-for-submission/`,
     data
   );
-  return response.data;
+  return response.data.requisition;
 };
 
 /**
@@ -142,7 +214,7 @@ export const approveRequisition = async (
   id: number,
   data?: ApproveRequisitionRequest
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/approve/`,
     data
   );
@@ -156,7 +228,7 @@ export const rejectRequisition = async (
   id: number,
   data: RejectRequisitionRequest
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/reject/`,
     data
   );
@@ -170,7 +242,7 @@ export const returnRequisition = async (
   id: number,
   data: ReturnRequisitionRequest
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/return/`,
     data
   );
@@ -184,7 +256,7 @@ export const cancelRequisition = async (
   id: number,
   comments?: string
 ): Promise<RequisitionResponse> => {
-  const response = await axios.post<RequisitionResponse>(
+  const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/cancel/`,
     { comments }
   );
@@ -209,7 +281,7 @@ export const uploadDocument = async (
     formData.append('description', data.description);
   }
 
-  const response = await axios.post<SupportingDocumentResponse>(
+  const response = await apiClient.post<SupportingDocumentResponse>(
     `${BASE_URL}/supporting-documents/`,
     formData,
     {
@@ -225,7 +297,7 @@ export const uploadDocument = async (
  * Delete a supporting document
  */
 export const deleteDocument = async (id: number): Promise<void> => {
-  await axios.delete(`${BASE_URL}/supporting-documents/${id}/`);
+  await apiClient.delete(`${BASE_URL}/supporting-documents/${id}/`);
 };
 
 // ============================================================================
@@ -236,7 +308,7 @@ export const deleteDocument = async (id: number): Promise<void> => {
  * Get requisitions pending my action
  */
 export const getMyPendingRequisitions = async (): Promise<RequisitionResponse[]> => {
-  const response = await axios.get<RequisitionListResponse>(
+  const response = await apiClient.get<RequisitionListResponse>(
     `${BASE_URL}/requisitions/`,
     {
       params: {
@@ -254,7 +326,7 @@ export const getMyPendingRequisitions = async (): Promise<RequisitionResponse[]>
 export const getMyRequisitions = async (
   params?: RequisitionListParams
 ): Promise<RequisitionListResponse> => {
-  const response = await axios.get<RequisitionListResponse>(
+  const response = await apiClient.get<RequisitionListResponse>(
     `${BASE_URL}/requisitions/`,
     {
       params: {
@@ -270,7 +342,7 @@ export const getMyRequisitions = async (
  * Get requisitions forwarded to me for submission
  */
 export const getForwardedToMe = async (): Promise<RequisitionResponse[]> => {
-  const response = await axios.get<RequisitionListResponse>(
+  const response = await apiClient.get<RequisitionListResponse>(
     `${BASE_URL}/requisitions/`,
     {
       params: {
@@ -286,7 +358,7 @@ export const getForwardedToMe = async (): Promise<RequisitionResponse[]> => {
  * Get requisitions pending my approval
  */
 export const getPendingApprovals = async (): Promise<RequisitionResponse[]> => {
-  const response = await axios.get<RequisitionListResponse>(
+  const response = await apiClient.get<RequisitionListResponse>(
     `${BASE_URL}/requisitions/`,
     {
       params: {
@@ -302,7 +374,7 @@ export const getPendingApprovals = async (): Promise<RequisitionResponse[]> => {
  * Get requisitions returned to me for revision
  */
 export const getReturnedToMe = async (): Promise<RequisitionResponse[]> => {
-  const response = await axios.get<RequisitionListResponse>(
+  const response = await apiClient.get<RequisitionListResponse>(
     `${BASE_URL}/requisitions/`,
     {
       params: {
@@ -324,7 +396,7 @@ export const getReturnedToMe = async (): Promise<RequisitionResponse[]> => {
 export const checkSubmissionAuthority = async (
   amount: number
 ): Promise<{ can_submit: boolean; forward_to?: number; reason?: string }> => {
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${BASE_URL}/requisitions/check-submission-authority/`,
     { amount }
   );
@@ -337,7 +409,7 @@ export const checkSubmissionAuthority = async (
 export const getSuggestedApprover = async (
   amount: number
 ): Promise<{ approver_id: number; approver_name: string; approval_limit: number }> => {
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${BASE_URL}/requisitions/get-suggested-approver/`,
     { amount }
   );

@@ -44,8 +44,9 @@ export interface GeneralExpenseLineItemResponse {
   requisition: number;
   program: number;
   program_name?: string;
+  expense_category: number;
   expense_code_assignment: number;
-  expense_code?: {
+  expense_code?: number | {
     id: number;
     code: string;
     description: string;
@@ -66,8 +67,9 @@ export interface TravelExpenseLineItemResponse {
   requisition: number;
   program: number;
   program_name?: string;
+  expense_category: number;
   expense_code_assignment: number;
-  expense_code?: {
+  expense_code?: number | {
     id: number;
     code: string;
     description: string;
@@ -94,7 +96,7 @@ export interface PerDiemExpenseLineItemResponse {
   program: number;
   program_name?: string;
   expense_code_assignment: number;
-  expense_code?: {
+  expense_code?: number | {
     id: number;
     code: string;
     description: string;
@@ -168,17 +170,21 @@ export interface RequisitionResponse {
 
 export interface GeneralExpenseLineItemRequest {
   program: number;
-  expense_code_assignment: number;
+  expense_category: number;
+  expense_code: number;
   budget_line_item?: number | null;
   description: string;
   amount: number;
   gst_rate: number;
+  gst_amount: number;
+  total_amount: number;
   line_order: number;
 }
 
 export interface TravelExpenseLineItemRequest {
   program: number;
-  expense_code_assignment: number;
+  expense_category: number;
+  expense_code: number;
   budget_line_item?: number | null;
   travel_date: string; // YYYY-MM-DD
   start_address: string;
@@ -186,19 +192,26 @@ export interface TravelExpenseLineItemRequest {
   description: string;
   total_km: number;
   rate_per_km: number;
+  amount: number;
   gst_rate: number;
+  gst_amount: number;
+  total_amount: number;
   line_order: number;
 }
 
 export interface PerDiemExpenseLineItemRequest {
   program: number;
-  expense_code_assignment: number;
+  expense_category: number;
+  expense_code: number;
   budget_line_item?: number | null;
   meal_date: string; // YYYY-MM-DD
   meal_type: 'breakfast' | 'lunch' | 'dinner' | 'full_day';
   description?: string;
   rate_amount: number;
+  amount: number;
   gst_rate: number;
+  gst_amount: number;
+  total_amount: number;
   line_order: number;
 }
 
@@ -210,7 +223,7 @@ export interface CreateRequisitionRequest {
   payee_staff?: number | null;
   payee_vendor?: number | null;
   payee_card_holder?: number | null;
-  payee_other?: number | null;
+  payee_other?: string | null;
   
   // Line items
   general_expense_items?: GeneralExpenseLineItemRequest[];
@@ -331,6 +344,7 @@ export interface Vendor {
 
 export interface CardHolder {
   id: number;
-  full_name: string;
-  card_last_four: string;
+  name: string;
+  display_name: string;
+  card_type: string;
 }

@@ -39,9 +39,9 @@ export default function CreateRequisition() {
               {/* <p className="text-gray-600 mt-2">
                 Submit a new expense requisition for approval
               </p> */}
-              <div className="mt-3 inline-flex items-center px-3 py-1.5 rounded-md bg-blue-50 border border-blue-200">
+              <div className="mt-3 inline-flex items-center px-4 py-2 rounded-lg bg-ems-green-50 border-2 border-ems-green-500">
                 <svg
-                  className="h-4 w-4 text-blue-600 mr-2"
+                  className="h-4 w-4 text-ems-green-600 mr-2"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -53,7 +53,7 @@ export default function CreateRequisition() {
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span className="text-sm font-medium text-blue-700">
+                <span className="text-sm font-medium text-ems-green-900">
                   {getSubmissionLimitMessage()}
                 </span>
               </div>

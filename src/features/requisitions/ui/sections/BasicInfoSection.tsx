@@ -1,15 +1,19 @@
 // src/features/requisitions/ui/sections/BasicInfoSection.tsx
 
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import type { RequisitionFormData } from "../../model/types";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useActiveStaff, useActiveVendors, useActiveContractors, useActiveCardHolders } from "../../api/usePayeeData";
 
 export function BasicInfoSection() {
-  const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
+  const { register, watch, setValue, control, formState: { errors } } = useFormContext<RequisitionFormData>();
   
   // Watch payee type to show appropriate dropdown
   const payeeType = watch('payeeType');
+  const payeeId = watch('payeeId');
+  
+  // Track previous payeeType to detect actual changes
+  const prevPayeeType = useRef<typeof payeeType>(payeeType);
   
   // Fetch data for dropdowns
   const { data: staffMembers, isLoading: isLoadingStaff } = useActiveStaff();
@@ -17,17 +21,17 @@ export function BasicInfoSection() {
   const { data: contractors, isLoading: isLoadingContractors } = useActiveContractors();
   const { data: cardHolders, isLoading: isLoadingCardHolders } = useActiveCardHolders();
   
-  // Clear payeeId when payeeType changes
+  // Clear payeeId when payeeType actually changes (not on initial load)
   useEffect(() => {
-    setValue('payeeId', null);
-    setValue('payeeOther', '');
+    // Only clear if payeeType changed AND it's not the initial undefined -> value transition
+    if (prevPayeeType.current !== undefined && prevPayeeType.current !== payeeType) {
+      setValue('payeeId', null);
+      setValue('payeeOther', '');
+    }
+    
+    // Update the previous value
+    prevPayeeType.current = payeeType;
   }, [payeeType, setValue]);
-  
-  // Set default date to today
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setValue('requisitionDate', today);
-  }, [setValue]);
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
@@ -179,7 +183,7 @@ export function BasicInfoSection() {
                 </option>
                 {cardHolders?.map((holder) => (
                   <option key={holder.id} value={holder.id}>
-                    {holder.full_name} (****{holder.card_last_four})
+                    {holder.name} - {holder.card_type.charAt(0).toUpperCase() + holder.card_type.slice(1)} - {holder.card_number_last4}
                   </option>
                 ))}
               </select>

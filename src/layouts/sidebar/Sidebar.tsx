@@ -25,7 +25,7 @@ export default function Sidebar() {
 
           {/* My Requisitions */}
           <Link 
-            to="/requisitions"
+            to="/requisitions/my-requisitions"
             className="flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200"
           >
             <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

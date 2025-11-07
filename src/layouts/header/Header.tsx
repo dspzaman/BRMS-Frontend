@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { getMediaUrl } from "@/shared/api/client";
+import { DevUserSwitcher } from "./DevUserSwitcher";
 
 export default function Header() {
   const { user, logout, getFullName } = useAuth();
@@ -53,6 +54,9 @@ export default function Header() {
             <p className="text-xs text-gray-500">Budget &amp; Requisition Management System</p>
           </div>
         </div>
+
+        {/* Dev User Switcher - Only shows in development */}
+        <DevUserSwitcher />
 
         {/* User Dropdown */}
         <div className="relative" ref={dropdownRef}>

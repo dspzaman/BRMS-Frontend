@@ -26,8 +26,9 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
   // Fetch meal rates (breakfast, lunch, dinner)
   const { data: mealRates, isLoading: isLoadingRates } = useMealRates();
   
-  // Watch expense code assignment to check if already set
-  const expenseCodeAssignment = watch(`perDiemExpenses.${index}.expenseCodeAssignment`);
+  // Watch expense code and category to check if already set
+  const expenseCode = watch(`perDiemExpenses.${index}.expenseCode`);
+  const category = watch(`perDiemExpenses.${index}.category`);
   
   // Ref for meal date input to auto-focus
   const dateRef = useRef<HTMLInputElement>(null);
@@ -51,13 +52,32 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
   const lunchRate = getRateForDate(mealRates?.lunch, mealDate || new Date().toISOString().split('T')[0]);
   const dinnerRate = getRateForDate(mealRates?.dinner, mealDate || new Date().toISOString().split('T')[0]);
   
-  // Auto-select the first (and only) per diem expense type as default
+  // Auto-select the first (and only) per diem expense type as default (only for new rows)
   useEffect(() => {
-    if (perDiemExpenseTypes && perDiemExpenseTypes.length > 0 && !expenseCodeAssignment) {
-      // Auto-select the first option (id: 37)
-      setValue(`perDiemExpenses.${index}.expenseCodeAssignment`, perDiemExpenseTypes[0].id);
+    // Only auto-select if BOTH category and expenseCode are empty (new row)
+    // This prevents overriding existing values when editing
+    if (perDiemExpenseTypes && perDiemExpenseTypes.length > 0 && !expenseCode && !category) {
+      // Auto-select the first option - store expense_code_id
+      setValue(`perDiemExpenses.${index}.expenseCode`, perDiemExpenseTypes[0].expense_code_id);
+      setValue(`perDiemExpenses.${index}.category`, perDiemExpenseTypes[0].category_id);
     }
-  }, [perDiemExpenseTypes, expenseCodeAssignment, index, setValue]);
+  }, [perDiemExpenseTypes, expenseCode, category, index, setValue]);
+  
+  // Handle expense type change - update both expenseCode and category
+  const handleExpenseTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategoryId = parseInt(e.target.value);
+    if (selectedCategoryId && perDiemExpenseTypes) {
+      const selectedType = perDiemExpenseTypes.find(type => type.category_id === selectedCategoryId);
+      if (selectedType) {
+        // Store the fixed expense_code_id and the selected category_id
+        setValue(`perDiemExpenses.${index}.expenseCode`, selectedType.expense_code_id);
+        setValue(`perDiemExpenses.${index}.category`, selectedType.category_id);
+      }
+    } else {
+      setValue(`perDiemExpenses.${index}.expenseCode`, null as any);
+      setValue(`perDiemExpenses.${index}.category`, null);
+    }
+  };
   
   // Update form rates whenever they change (for summary calculation)
   useEffect(() => {
@@ -157,25 +177,26 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
               Expense Type <span className="text-red-500">*</span>
             </label>
             <select 
-              {...register(`perDiemExpenses.${index}.expenseCodeAssignment`, {
+              {...register(`perDiemExpenses.${index}.category`, {
                 required: "Expense type is required",
                 valueAsNumber: true,
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+              onChange={handleExpenseTypeChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
               disabled={isLoadingExpenseTypes}
             >
               <option value="">
                 {isLoadingExpenseTypes ? 'Loading...' : 'Select expense type'}
               </option>
               {perDiemExpenseTypes?.map((expenseType) => (
-                <option key={expenseType.id} value={expenseType.id}>
+                <option key={expenseType.id} value={expenseType.category_id}>
                   {expenseType.display_name}
                 </option>
               ))}
             </select>
-            {errors.perDiemExpenses?.[index]?.expenseCodeAssignment && (
+            {errors.perDiemExpenses?.[index]?.category && (
               <p className="mt-1 text-xs text-red-600">
-                {errors.perDiemExpenses[index]?.expenseCodeAssignment?.message}
+                {errors.perDiemExpenses[index]?.category?.message}
               </p>
             )}
           </div>

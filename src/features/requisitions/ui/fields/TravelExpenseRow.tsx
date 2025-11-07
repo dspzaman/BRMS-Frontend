@@ -28,7 +28,8 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
   const { data: travelRates, isLoading: isLoadingRates } = useTravelRates();
 
   // Watch fields for calculations
-  const expenseCodeAssignment = watch(`travelExpenses.${index}.expenseCodeAssignment`);
+  const expenseCode = watch(`travelExpenses.${index}.expenseCode`);
+  const category = watch(`travelExpenses.${index}.category`);
   const travelDate = watch(`travelExpenses.${index}.travelDate`);
   const totalKm = watch(`travelExpenses.${index}.totalKm`);
   const ratePerKm = watch(`travelExpenses.${index}.ratePerKm`);
@@ -87,18 +88,38 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
     }
   }, [isNewRow]);
 
-  // Auto-select Program Delivery travel type as default
+  // Auto-select Program Delivery travel type as default (only for new rows)
   useEffect(() => {
-    if (travelExpenseTypes && !expenseCodeAssignment) {
+    // Only auto-select if BOTH category and expenseCode are empty (new row)
+    // This prevents overriding existing values when editing
+    if (travelExpenseTypes && !expenseCode && !category) {
       // Find the Program Delivery option (parent_category_name = "Program Delivery")
       const programDeliveryType = travelExpenseTypes.find(
         type => type.parent_category_name === "Program Delivery"
       );
       if (programDeliveryType) {
-        setValue(`travelExpenses.${index}.expenseCodeAssignment`, programDeliveryType.id);
+        // Store expense_code_id
+        setValue(`travelExpenses.${index}.expenseCode`, programDeliveryType.expense_code_id);
+        setValue(`travelExpenses.${index}.category`, programDeliveryType.category_id);
       }
     }
-  }, [travelExpenseTypes, expenseCodeAssignment, index, setValue]);
+  }, [travelExpenseTypes, expenseCode, category, index, setValue]);
+  
+  // Handle expense type change - update both expenseCode and category
+  const handleExpenseTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategoryId = parseInt(e.target.value);
+    if (selectedCategoryId && travelExpenseTypes) {
+      const selectedType = travelExpenseTypes.find(type => type.category_id === selectedCategoryId);
+      if (selectedType) {
+        // Store the fixed expense_code_id and the selected category_id
+        setValue(`travelExpenses.${index}.expenseCode`, selectedType.expense_code_id);
+        setValue(`travelExpenses.${index}.category`, selectedType.category_id);
+      }
+    } else {
+      setValue(`travelExpenses.${index}.expenseCode`, null as any);
+      setValue(`travelExpenses.${index}.category`, null);
+    }
+  };
   
   // Update rate when travel date changes
   useEffect(() => {
@@ -188,23 +209,24 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
             Expense Type <span className="text-red-500">*</span>
           </label>
           <select
-            {...register(`travelExpenses.${index}.expenseCodeAssignment`, {
+            {...register(`travelExpenses.${index}.category`, {
               required: "Expense type is required",
               valueAsNumber: true,
             })}
+            onChange={handleExpenseTypeChange}
             className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
             disabled={isLoadingTypes}
           >
             <option value="">Select expense type</option>
             {travelExpenseTypes?.map((type) => (
-              <option key={type.id} value={type.id}>
+              <option key={type.id} value={type.category_id}>
                 {type.display_name}
               </option>
             ))}
           </select>
-          {errors.travelExpenses?.[index]?.expenseCodeAssignment && (
+          {errors.travelExpenses?.[index]?.category && (
             <p className="mt-1 text-xs text-red-600">
-              {errors.travelExpenses[index]?.expenseCodeAssignment?.message}
+              {errors.travelExpenses[index]?.category?.message}
             </p>
           )}
         </div>
