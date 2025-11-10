@@ -23,14 +23,8 @@ export function SupportingDocumentRow({
   const fileName = watch(`supportingDocuments.${index}.fileName`);
   const fileUrl = watch(`supportingDocuments.${index}.fileUrl`); // For existing documents when editing
 
-  // Auto-focus file input when row is newly added
-  useEffect(() => {
-    if (isNewRow && fileInputRef.current) {
-      setTimeout(() => {
-        fileInputRef.current?.click();
-      }, 100);
-    }
-  }, [isNewRow]);
+  // Note: Removed auto-click behavior - users should manually click to select file
+  // This prevents unwanted file picker popup when adding a new document row
 
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,12 +164,14 @@ export function SupportingDocumentRow({
                   {formatFileSize(watch(`supportingDocuments.${index}.fileSize`))}
                 </p>
 
-                {/* File Selected Indicator */}
+                {/* File Status Indicator */}
                 <div className="mt-2 flex items-center gap-2">
                   <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-xs text-green-600 font-medium">File selected - will upload when saving</span>
+                  <span className="text-xs text-green-600 font-medium">
+                    {fileUrl ? 'Previously uploaded document' : 'File selected - will upload when saving'}
+                  </span>
                 </div>
               </div>
             </div>

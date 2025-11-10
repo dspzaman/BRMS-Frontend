@@ -35,3 +35,32 @@ export function getDefaultProgram(programs: UserProgramInfo[]): number | null {
   const primaryProgram = programs.find(p => p.is_primary);
   return primaryProgram ? primaryProgram.program_id : null;
 }
+
+/**
+ * Common organizational addresses for travel expense autocomplete
+ * Add more addresses as needed
+ */
+export const COMMON_ADDRESSES = [
+  "AHC - 10578 113 St #100, Edmonton, AB T5H 3H5",
+  // Add more common addresses here as needed
+  // "Office Name - Full Address",
+];
+
+/**
+ * Filter addresses based on user input (client-side, instant)
+ * 
+ * @param query - User's search query
+ * @param limit - Maximum number of suggestions to return
+ * @returns Filtered address suggestions
+ */
+export function filterAddressSuggestions(query: string, limit: number = 10): string[] {
+  if (!query || query.trim().length < 2) {
+    return [];
+  }
+  
+  const searchTerm = query.toLowerCase().trim();
+  
+  return COMMON_ADDRESSES
+    .filter(address => address.toLowerCase().includes(searchTerm))
+    .slice(0, limit);
+}

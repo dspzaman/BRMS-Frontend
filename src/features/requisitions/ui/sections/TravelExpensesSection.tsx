@@ -97,6 +97,11 @@ export function TravelExpensesSection() {
   
   const { totalAmount, totalGST, grandTotal } = calculateTotals();
 
+  // Check if at least one travel expense has a travel date (indicates valid/complete row)
+  const hasValidTravelExpense = travelExpenses && travelExpenses.some(
+    (expense) => expense.travelDate && expense.travelDate.trim() !== ''
+  );
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       {/* Section Header */}
@@ -147,24 +152,26 @@ export function TravelExpensesSection() {
         />
       )}
 
-      {/* Per Diem Checkbox */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <label className="flex items-center space-x-3 cursor-pointer">
-          <input
-            type="checkbox"
-            {...register("includePerDiemExpenses")}
-            className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600"
-          />
-          <div>
-            <span className="text-sm font-medium text-gray-900">
-              Include Per Diem Expenses
-            </span>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Add meals, accommodations, and other per diem expenses for this travel
-            </p>
-          </div>
-        </label>
-      </div>
+      {/* Per Diem Checkbox - Only show if there's at least one valid travel expense with date */}
+      {hasValidTravelExpense && (
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register("includePerDiemExpenses")}
+              className="h-4 w-4 text-ems-green-600 focus:ring-ems-green-600 border-gray-300 rounded accent-ems-green-600"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-900">
+                Include Per Diem Expenses
+              </span>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Add meals, accommodations, and other per diem expenses for this travel
+              </p>
+            </div>
+          </label>
+        </div>
+      )}
     </div>
   );
 }

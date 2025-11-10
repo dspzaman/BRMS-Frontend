@@ -5,7 +5,7 @@ import type { RequisitionFormData } from "../../model/types";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useTravelRates, getRateForDate } from "../../api/useTravelRates";
 import { useTravelExpenseTypes } from "../../api/usePerDiemExpenseTypes";
-import { apiClient } from "@/shared/api/client";
+import { filterAddressSuggestions } from "../../utils/programUtils";
 
 interface TravelExpenseRowProps {
   index: number;
@@ -41,40 +41,20 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
   // Ref for travel date input to auto-focus
   const dateRef = useRef<HTMLInputElement>(null);
   
-  // Address autocomplete state
-  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
+  // Address autocomplete state (client-side filtering, no API calls)
+  const [startAddressSuggestions, setStartAddressSuggestions] = useState<string[]>([]);
+  const [endAddressSuggestions, setEndAddressSuggestions] = useState<string[]>([]);
   
-  // Fetch address suggestions
-  const fetchAddressSuggestions = async (query: string) => {
-    if (!query || query.length < 2) {
-      setAddressSuggestions([]);
-      return;
-    }
-    
-    try {
-      const response = await apiClient.get<string[]>(
-        '/api/expense-tracking/form-data/travel-address-suggestions/',
-        { params: { q: query, limit: 10 } }
-      );
-      setAddressSuggestions(response.data);
-    } catch (error) {
-      console.error('Failed to fetch address suggestions:', error);
-      setAddressSuggestions([]);
-    }
-  };
-  
-  // Watch for changes in start address and fetch suggestions
+  // Filter start address suggestions (instant, client-side)
   useEffect(() => {
-    if (startAddress) {
-      fetchAddressSuggestions(startAddress);
-    }
+    const suggestions = filterAddressSuggestions(startAddress || '', 10);
+    setStartAddressSuggestions(suggestions);
   }, [startAddress]);
   
-  // Watch for changes in end address and fetch suggestions
+  // Filter end address suggestions (instant, client-side)
   useEffect(() => {
-    if (endAddress) {
-      fetchAddressSuggestions(endAddress);
-    }
+    const suggestions = filterAddressSuggestions(endAddress || '', 10);
+    setEndAddressSuggestions(suggestions);
   }, [endAddress]);
 
   // Auto-focus travel date when row is newly added
@@ -270,7 +250,7 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
             </p>
           )}
           <datalist id={`start-address-suggestions-${index}`}>
-            {addressSuggestions.map((suggestion, idx) => (
+            {startAddressSuggestions.map((suggestion, idx) => (
               <option key={idx} value={suggestion} />
             ))}
           </datalist>
@@ -296,7 +276,7 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
             </p>
           )}
           <datalist id={`end-address-suggestions-${index}`}>
-            {addressSuggestions.map((suggestion, idx) => (
+            {endAddressSuggestions.map((suggestion, idx) => (
               <option key={idx} value={suggestion} />
             ))}
           </datalist>

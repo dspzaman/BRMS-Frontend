@@ -134,7 +134,8 @@ export function useSubmitRequisition() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: submitRequisition,
+    mutationFn: ({ id, comments }: { id: number; comments?: string }) => 
+      submitRequisition(id, comments ? { comments } : undefined),
     onSuccess: (submittedRequisition) => {
       // Invalidate all requisition queries to refetch
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });

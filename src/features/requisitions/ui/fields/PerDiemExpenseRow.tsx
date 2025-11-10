@@ -20,6 +20,16 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
   // Get programs from user context
   const programs = user?.programs || [];
   
+  // Get travel expenses to extract travel dates
+  const travelExpenses = watch('travelExpenses') || [];
+  
+  // Extract unique travel dates from travel expenses (only dates that are filled in)
+  const availableTravelDates = travelExpenses
+    .filter(expense => expense.travelDate && expense.travelDate.trim() !== '')
+    .map(expense => expense.travelDate)
+    .filter((date, index, self) => self.indexOf(date) === index) // Remove duplicates
+    .sort(); // Sort chronologically
+  
   // Fetch per diem expense types (code 5791 with categories)
   const { data: perDiemExpenseTypes, isLoading: isLoadingExpenseTypes } = usePerDiemExpenseTypes();
   
@@ -143,7 +153,7 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
 
       {/* Form Fields */}
       <div className="space-y-3">
-        {/* Row 1: Program, Expense Type, and Meal Date (3 columns) */}
+        {/* Row 1: Program, Expense Type, and Travel Date (3 columns) */}
         <div className="grid grid-cols-3 gap-3">
           {/* Program */}
           <div>
@@ -201,18 +211,35 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
             )}
           </div>
 
-          {/* Meal Date */}
+          {/* Travel Date */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Meal Date <span className="text-red-500">*</span>
+              Travel Date <span className="text-red-500">*</span>
             </label>
-            <input 
-              type="date" 
+            <select
               {...register(`perDiemExpenses.${index}.mealDate`, {
-                required: "Meal date is required",
+                required: "Travel date is required",
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
-            />
+            >
+              <option value="">Select travel date</option>
+              {availableTravelDates.map((date) => {
+                // Parse date as local date to avoid timezone shift
+                const [year, month, day] = date.split('-').map(Number);
+                const localDate = new Date(year, month - 1, day);
+                
+                return (
+                  <option key={date} value={date}>
+                    {localDate.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </option>
+                );
+              })}
+            </select>
             {errors.perDiemExpenses?.[index]?.mealDate && (
               <p className="mt-1 text-xs text-red-600">
                 {errors.perDiemExpenses[index]?.mealDate?.message}

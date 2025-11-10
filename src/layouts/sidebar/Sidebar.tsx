@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/shared/contexts/AuthContext";
 
 export default function Sidebar() {
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <aside className="w-64 bg-gray-50 transition-all duration-300" style={{ backgroundColor: "#F8F8F8" }}>
@@ -51,18 +53,23 @@ export default function Sidebar() {
             Create New
           </Link>
 
-          {/* Pending Approvals */}
-          <Link 
-            to="/approvals"
-            className="flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200"
-          >
-            <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Pending Approvals
-            <span className="ml-auto bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">3</span>
-          </Link>
+          {/* Assigned Requisitions - Only show for users with approval rights */}
+          {user?.can_approve && (
+            <Link 
+              to="/requisitions/assigned"
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
+                location.pathname === '/requisitions/assigned' 
+                  ? 'text-white bg-ems-green-600' 
+                  : 'text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Assigned Requisitions
+            </Link>
+          )}
 
           {/* Reports */}
           <Link 

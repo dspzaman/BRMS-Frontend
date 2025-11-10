@@ -70,8 +70,11 @@ export function SupportingDocumentsSection() {
     return (totalBytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
   
-  // Count uploaded files
-  const uploadedCount = supportingDocuments?.filter(doc => doc.file !== null).length || 0;
+  // Count uploaded files (both new File objects and existing uploaded documents)
+  const uploadedCount = supportingDocuments?.filter(doc => 
+    (doc.file !== null && doc.file instanceof File) || // New file selected
+    (doc.fileUrl && doc.fileUrl.trim() !== '') // Existing uploaded document
+  ).length || 0;
   
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
