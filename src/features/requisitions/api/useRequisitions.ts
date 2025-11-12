@@ -111,12 +111,14 @@ export function useUpdateDraft() {
     mutationFn: ({ 
       id, 
       data, 
-      files 
+      files,
+      existingDocumentIds
     }: { 
       id: number; 
       data: CreateRequisitionRequest; 
-      files?: { index: number; file: File; documentType: string; description: string }[] 
-    }) => updateDraft(id, data, files),
+      files?: { index: number; file: File; documentType: string; description: string }[];
+      existingDocumentIds?: number[];
+    }) => updateDraft(id, data, files, existingDocumentIds),
     onSuccess: (updatedRequisition) => {
       // Invalidate all requisition queries to refetch
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });

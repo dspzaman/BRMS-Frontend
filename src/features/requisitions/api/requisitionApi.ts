@@ -127,21 +127,29 @@ export const saveAsDraft = async (
 export const updateDraft = async (
   id: number,
   data: CreateRequisitionRequest,
-  files?: { index: number; file: File; documentType: string; description: string }[]
+  files?: { index: number; file: File; documentType: string; description: string }[],
+  existingDocumentIds?: number[]
 ): Promise<RequisitionResponse> => {
-  // If files are present, use FormData for multipart upload
-  if (files && files.length > 0) {
+  // If files are present OR we need to preserve existing documents, use FormData
+  if ((files && files.length > 0) || (existingDocumentIds && existingDocumentIds.length > 0)) {
     const formData = new FormData();
     
     // Append JSON data as a string (Django will parse it)
     formData.append('data', JSON.stringify(data));
     
+    // Append existing document IDs to preserve
+    if (existingDocumentIds && existingDocumentIds.length > 0) {
+      formData.append('existing_document_ids', JSON.stringify(existingDocumentIds));
+    }
+    
     // Append each file with metadata
-    files.forEach((fileData) => {
-      formData.append(`document_${fileData.index}_file`, fileData.file);
-      formData.append(`document_${fileData.index}_type`, fileData.documentType);
-      formData.append(`document_${fileData.index}_description`, fileData.description);
-    });
+    if (files && files.length > 0) {
+      files.forEach((fileData) => {
+        formData.append(`document_${fileData.index}_file`, fileData.file);
+        formData.append(`document_${fileData.index}_type`, fileData.documentType);
+        formData.append(`document_${fileData.index}_description`, fileData.description);
+      });
+    }
     
     const response = await apiClient.post<RequisitionResponse>(
       `${BASE_URL}/requisitions/${id}/update-draft/`,
@@ -155,7 +163,7 @@ export const updateDraft = async (
     return response.data;
   }
   
-  // No files - send as regular JSON
+  // No files and no existing documents - send as regular JSON
   const response = await apiClient.post<RequisitionResponse>(
     `${BASE_URL}/requisitions/${id}/update-draft/`,
     data

@@ -194,17 +194,26 @@ export function useRequisitionForm({
       const formData = methods.getValues();
       const apiData = transformFormDataToAPI(formData);
 
-      // Collect files from supporting documents
+      // Collect files and existing document IDs from supporting documents
       const files: { index: number; file: File; documentType: string; description: string }[] = [];
+      const existingDocumentIds: number[] = [];
+
       if (formData.supportingDocuments && formData.supportingDocuments.length > 0) {
         formData.supportingDocuments.forEach((doc, index) => {
           if (doc.file && doc.file instanceof File) {
+            // New file to upload
             files.push({
               index,
               file: doc.file,
               documentType: doc.documentType || 'other',
               description: doc.description || '',
             });
+          } else if (doc.id || doc.uploadedDocumentId) {
+            // Existing document to preserve
+            const docId = doc.id || doc.uploadedDocumentId;
+            if (docId) {
+              existingDocumentIds.push(docId);
+            }
           }
         });
       }
@@ -215,6 +224,7 @@ export function useRequisitionForm({
           id: requisitionId,
           data: apiData,
           files: files.length > 0 ? files : undefined,
+          existingDocumentIds: existingDocumentIds.length > 0 ? existingDocumentIds : undefined,
         });
       } else {
         // Use React Query mutation for create
