@@ -41,15 +41,9 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Parse error message
-    const errorMessage = 
-      error.response?.data?.error || 
-      error.response?.data?.detail || 
-      error.response?.data?.message || 
-      error.message || 
-      'An error occurred';
-
-    return Promise.reject(new Error(errorMessage));
+    // Preserve the original error object with response data
+    // This allows components to check status codes and error details
+    return Promise.reject(error);
   }
 );
 

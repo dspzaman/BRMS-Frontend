@@ -46,8 +46,10 @@ export default function ViewRequisitionPage() {
   // Handle error state
   if (error || !requisition) {
     // Check if it's a 403 Forbidden error (Access Denied)
-    const is403Error = error?.response?.status === 403;
-    const is404Error = error?.response?.status === 404;
+    const axiosError = error as any;
+       
+    const statusCode = axiosError?.response?.status;
+    const is403Error = statusCode === 403;
     
     return (
       <div className="min-h-screen bg-gray-50">
