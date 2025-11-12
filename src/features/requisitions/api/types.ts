@@ -33,6 +33,7 @@ export interface SupportingDocumentResponse {
   file_path: string;
   file_size: number;
   file_size_mb: number;
+  file_url?: string;
   uploaded_by: number;
   uploaded_by_name?: string;
   uploaded_at: string;
@@ -240,7 +241,7 @@ export interface SubmitRequisitionRequest {
 }
 
 export interface ForwardRequisitionRequest {
-  forward_to: number; // User ID to forward to
+  forward_to?: number; // Optional: Backend auto-finds submitter if not provided
   comments?: string;
 }
 

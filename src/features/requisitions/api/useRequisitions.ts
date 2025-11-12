@@ -157,7 +157,7 @@ export function useForwardRequisition() {
   
   return useMutation({
     mutationFn: ({ id, comments }: { id: number; comments?: string }) => 
-      forwardRequisition(id, comments),
+      forwardRequisition(id, { comments }),
     onSuccess: (forwardedRequisition) => {
       // Invalidate all requisition queries to refetch
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });

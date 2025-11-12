@@ -59,8 +59,9 @@ export default function EditRequisitionPage() {
     );
   }
 
-  // Check if requisition is editable (only drafts can be edited)
-  if (requisition.current_status !== 'draft') {
+  // Check if requisition is editable (drafts and forwarded requisitions can be edited)
+  const editableStatuses = ['draft', 'forwarded_for_submission'];
+  if (!editableStatuses.includes(requisition.current_status)) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -73,7 +74,7 @@ export default function EditRequisitionPage() {
                 Cannot Edit Requisition
               </h2>
               <p className="text-gray-600 mb-6">
-                Only draft requisitions can be edited. This requisition has status: {requisition.current_status_display}
+                Only draft and forwarded requisitions can be edited. This requisition has status: {requisition.current_status_display}
               </p>
               <button
                 onClick={() => navigate('/requisitions/my-requisitions')}
@@ -104,10 +105,16 @@ export default function EditRequisitionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">
-                    Edit Requisition {requisition.requisition_number}
+                    {requisition.current_status === 'forwarded_for_submission' 
+                      ? `Review & Submit Requisition ${requisition.requisition_number}`
+                      : `Edit Requisition ${requisition.requisition_number}`
+                    }
                   </h1>
                   <p className="text-gray-600 mt-2">
-                    Update your draft requisition before submitting
+                    {requisition.current_status === 'forwarded_for_submission'
+                      ? 'Review, edit if needed, and submit this requisition'
+                      : 'Update your draft requisition before submitting'
+                    }
                   </p>
                 </div>
                 <button
@@ -138,7 +145,12 @@ export default function EditRequisitionPage() {
               requisitionId={Number(id)}
               initialData={initialData}
               onSuccess={() => {
-                navigate('/requisitions/my-requisitions');
+                // Navigate based on status - forwarded goes to assigned, drafts to my requisitions
+                if (requisition.current_status === 'forwarded_for_submission') {
+                  navigate('/requisitions/assigned');
+                } else {
+                  navigate('/requisitions/my-requisitions');
+                }
               }}
             />
           </div>
