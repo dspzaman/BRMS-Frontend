@@ -13,6 +13,7 @@ import MyRequisitionsPage from "@/pages/Requisitions/MyRequisitionsPage";
 import AssignedRequisitionsPage from "@/pages/Requisitions/AssignedRequisitionsPage";
 import EditRequisitionPage from "@/pages/Requisitions/EditRequisitionPage";
 import ViewRequisitionPage from "@/pages/Requisitions/ViewRequisitionPage";
+import ViewReports from "@/pages/Reports/viewReports";
 
 /**
  * Protects routes that require authentication.
@@ -52,6 +53,25 @@ function PublicRoute({ children }: { children: JSX.Element }) {
   // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
+function ApproverRoute({ children }: { children: JSX.Element }) {
+  const { user, isInitializing } = useAuth();
+
+  if (isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!user?.can_approve) {
+    // Not an approver → redirect to My Requisitions
+    return <Navigate to="/requisitions/my-requisitions" replace />;
   }
 
   return children;
@@ -128,14 +148,17 @@ export default function App() {
         }
       />
 
+      
       <Route
-        path="/requisitions/assigned"
-        element={
-          <ProtectedRoute>
+      path="/requisitions/assigned"
+      element={
+        <ProtectedRoute>
+          <ApproverRoute>
             <AssignedRequisitionsPage />
-          </ProtectedRoute>
-        }
-      />
+          </ApproverRoute>
+        </ProtectedRoute>
+      }
+    />
 
       <Route
         path="/requisitions/edit/:id"
@@ -151,6 +174,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ViewRequisitionPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <ViewReports />
           </ProtectedRoute>
         }
       />

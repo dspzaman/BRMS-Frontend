@@ -19,12 +19,29 @@ export function BasicInfoDisplay({ requisition }: BasicInfoDisplayProps) {
     });
   };
 
+  // Get payee name based on payee type
+  const getPayeeName = () => {
+    switch (requisition.payee_type) {
+      case 'staff':
+        return requisition.payee_staff_name || 'N/A';
+      case 'vendor':
+      case 'contractor':
+        return requisition.payee_vendor_name || 'N/A';
+      case 'office_credit_card':
+        return requisition.payee_card_holder_name || 'N/A';
+      case 'other':
+        return requisition.payee_other_name || requisition.payee_other || 'N/A';
+      default:
+        return 'N/A';
+    }
+  };
+
   // Get payee type display
   const getPayeeTypeDisplay = (type: string) => {
     const types: Record<string, string> = {
       'staff': 'Staff Member',
       'vendor': 'Vendor',
-      'new_vendor': 'New Vendor',
+      'contractor': 'Contractor',
       'office_credit_card': 'Office Credit Card',
       'other': 'Other'
     };
@@ -67,7 +84,7 @@ export function BasicInfoDisplay({ requisition }: BasicInfoDisplayProps) {
           <div>
             <label className="text-sm font-medium text-gray-500">Payee</label>
             <p className="text-base text-gray-900 mt-1">
-              {requisition.payee_name || 'N/A'} 
+              {getPayeeName()} 
               <span className="text-gray-500 text-sm ml-2">({getPayeeTypeDisplay(requisition.payee_type)})</span>
             </p>
           </div>

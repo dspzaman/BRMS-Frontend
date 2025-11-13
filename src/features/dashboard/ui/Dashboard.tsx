@@ -1,5 +1,6 @@
 import { Footer } from "@/layouts/footer";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user, token, getFullName } = useAuth();
@@ -15,11 +16,32 @@ export default function Dashboard() {
     <main className="flex-1 bg-white">
       <div className="p-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">DASHBOARD</h1>
-          <p className="text-gray-600 mt-2">
-            Welcome to your budget & requisition management dashboard, {getFullName()}
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">DASHBOARD</h1>
+            <p className="text-gray-600 mt-2">
+              Welcome to your budget & requisition management dashboard, {getFullName()}
+            </p>
+          </div>
+          <Link
+            to="/requisitions/create"
+            className="px-4 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 font-medium flex items-center"
+          >
+            <svg
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            New Requisition
+          </Link>
         </div>
 
         {/* Debug Section - Only in Development */}

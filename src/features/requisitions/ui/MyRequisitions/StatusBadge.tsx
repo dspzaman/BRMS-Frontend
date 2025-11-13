@@ -24,6 +24,16 @@ export function StatusBadge({ requisition }: StatusBadgeProps) {
     );
   }
 
+  // Returned for revision (NEW STATUS)
+  if (requisition.current_status === 'returned_for_revision') {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex items-center gap-1">
+        <span>↩️</span>
+        Returned for Revision
+      </span>
+    );
+  }
+
   // Forwarded for submission
   if (requisition.current_status === 'forwarded_for_submission') {
     return (

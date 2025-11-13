@@ -16,6 +16,9 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
   const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
   const { user } = useAuth();
   
+  // Watch if general expenses are enabled to conditionally apply validation
+  const includeGeneralExpenses = watch('includeGeneralExpenses');
+  
   // Ref for category dropdown to auto-focus
   const categoryRef = useRef<HTMLSelectElement>(null);
   
@@ -91,7 +94,7 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
       <div>
         <select 
           {...register(`generalExpenses.${index}.program`, {
-            required: "Program is required",
+            required: includeGeneralExpenses ? "Program is required" : false,
             valueAsNumber: true,
           })}
           className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"

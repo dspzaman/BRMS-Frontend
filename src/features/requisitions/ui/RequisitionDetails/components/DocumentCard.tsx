@@ -30,11 +30,6 @@ export function DocumentCard({ document }: DocumentCardProps) {
     });
   };
 
-  const handleDownload = () => {
-    if (document.file_url) {
-      window.open(document.file_url, '_blank');
-    }
-  };
 
   // Get document type display
   const documentTypeDisplay = {
@@ -58,13 +53,20 @@ export function DocumentCard({ document }: DocumentCardProps) {
           )}
         </div>
       </div>
-      <button 
-        onClick={handleDownload}
-        disabled={!document.file_url}
-        className="px-4 py-2 text-sm bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-      >
-        Download
-      </button>
+      {document.file_url ? (
+        <a 
+          href={document.file_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-ems-green-600 hover:text-ems-green-700 transition-colors"
+        >
+          Download
+        </a>
+      ) : (
+        <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
+          Download
+        </span>
+      )}
     </div>
   );
 }

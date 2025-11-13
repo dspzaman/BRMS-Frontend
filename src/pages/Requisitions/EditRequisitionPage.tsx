@@ -6,6 +6,8 @@ import { Footer } from "@/layouts/footer";
 import RequisitionForm from '@/features/requisitions/ui/RequisitionForm';
 import { useRequisition } from '@/features/requisitions/api/useRequisitions';
 import { transformAPIToFormData } from '@/features/requisitions/utils/transformers';
+import { StatusHistorySection } from '@/features/requisitions/ui/RequisitionDetails/sections/StatusHistorySection';
+
 
 export default function EditRequisitionPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +62,7 @@ export default function EditRequisitionPage() {
   }
 
   // Check if requisition is editable (drafts and forwarded requisitions can be edited)
-  const editableStatuses = ['draft', 'forwarded_for_submission'];
+  const editableStatuses = ['draft', 'forwarded_for_submission', 'returned_for_revision'];
   if (!editableStatuses.includes(requisition.current_status)) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -74,7 +76,8 @@ export default function EditRequisitionPage() {
                 Cannot Edit Requisition
               </h2>
               <p className="text-gray-600 mb-6">
-                Only draft and forwarded requisitions can be edited. This requisition has status: {requisition.current_status_display}
+                Only draft, forwarded, and returned-for-revision requisitions can be edited. This requisition has status: {requisition.current_status_display}
+
               </p>
               <button
                 onClick={() => navigate('/requisitions/my-requisitions')}
@@ -105,7 +108,7 @@ export default function EditRequisitionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">
-                    {requisition.current_status === 'forwarded_for_submission' 
+                    {requisition.current_status === 'forwarded_for_submission'
                       ? `Review & Submit Requisition ${requisition.requisition_number}`
                       : `Edit Requisition ${requisition.requisition_number}`
                     }
@@ -140,19 +143,24 @@ export default function EditRequisitionPage() {
             </div>
 
             {/* Requisition Form */}
-            <RequisitionForm 
-              mode="edit"
-              requisitionId={Number(id)}
-              initialData={initialData}
-              onSuccess={() => {
-                // Navigate based on status - forwarded goes to assigned, drafts to my requisitions
-                if (requisition.current_status === 'forwarded_for_submission') {
-                  navigate('/requisitions/assigned');
-                } else {
-                  navigate('/requisitions/my-requisitions');
-                }
-              }}
-            />
+            <div className="space-y-6">
+              <RequisitionForm
+                mode="edit"
+                requisitionId={Number(id)}
+                initialData={initialData}
+                onSuccess={() => {
+                  // Navigate based on status - forwarded goes to assigned, drafts/returned to my requisitions
+                  if (requisition.current_status === 'forwarded_for_submission') {
+                    navigate('/requisitions/assigned');
+                  } else {
+                    navigate('/requisitions/my-requisitions');
+                  }
+                }}
+              />
+
+              {/* Status History - so user sees why it was returned */}
+              <StatusHistorySection requisition={requisition} />
+            </div>
           </div>
           <Footer />
         </main>

@@ -18,8 +18,27 @@ export function RequisitionFormActions({
   onForward,
   isSaving,
 }: RequisitionFormActionsProps) {
-  const { handleSubmit, watch } = useFormContext<RequisitionFormData>();
+  const { handleSubmit, watch, formState } = useFormContext<RequisitionFormData>();
   const { user } = useAuth();
+
+  // Debug: Log form errors when they exist
+  const { errors } = formState;
+
+  const handleSubmitWithLogging = handleSubmit(
+    onSubmit,
+    (errors) => {
+      console.error('❌ Form validation failed:', errors);
+      alert('Please fill in all required fields before submitting.');
+    }
+  );
+
+  const handleForwardWithLogging = handleSubmit(
+    onForward,
+    (errors) => {
+      console.error('❌ Form validation failed:', errors);
+      alert('Please fill in all required fields before forwarding.');
+    }
+  );
 
   // Watch total amount to determine which button to show
   const totalWithTax = watch('totalWithTax') || 0;
@@ -85,7 +104,7 @@ export function RequisitionFormActions({
         {canSubmit ? (
           <button
             type="button"
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmitWithLogging}
             disabled={isSaving}
             className="px-6 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-ems-green-600 hover:bg-ems-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -94,7 +113,7 @@ export function RequisitionFormActions({
         ) : (
           <button
             type="button"
-            onClick={handleSubmit(onForward)}
+            onClick={handleForwardWithLogging}
             disabled={isSaving}
             className="px-6 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >

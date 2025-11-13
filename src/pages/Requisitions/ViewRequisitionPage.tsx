@@ -15,7 +15,8 @@ export default function ViewRequisitionPage() {
   const { data: requisition, isLoading, error } = useRequisition(Number(id));
   const { user } = useAuth();
   // Format date and time
-  const formatDateTime = (dateString: string) => {
+  const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleString('en-US', { 
       month: 'short', 
@@ -25,6 +26,37 @@ export default function ViewRequisitionPage() {
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  // Get payee name based on payee type
+  const getPayeeName = () => {
+    if (!requisition) return 'N/A';
+    switch (requisition.payee_type) {
+      case 'staff':
+        return requisition.payee_staff_name || 'N/A';
+      case 'vendor':
+      case 'contractor':
+        return requisition.payee_vendor_name || 'N/A';
+      case 'office_credit_card':
+        return requisition.payee_card_holder_name || 'N/A';
+      case 'other':
+        return requisition.payee_other_name || requisition.payee_other || 'N/A';
+      default:
+        return 'N/A';
+    }
+  };
+
+  // Get payee type display name
+  const getPayeeTypeDisplay = () => {
+    if (!requisition) return '';
+    const typeMap: Record<string, string> = {
+      'staff': 'Staff',
+      'vendor': 'Vendor',
+      'contractor': 'Contractor',
+      'office_credit_card': 'Office Credit Card',
+      'other': 'Other'
+    };
+    return typeMap[requisition.payee_type] || requisition.payee_type;
   };
 
   // Handle loading state
@@ -118,7 +150,7 @@ export default function ViewRequisitionPage() {
                 </div>
                 <div className="flex gap-3">
                   {/* Edit button for drafts and forwarded requisitions */}
-                  {['draft', 'forwarded_for_submission'].includes(requisition.current_status) && (
+                  {['draft', 'forwarded_for_submission', 'returned_for_revision'].includes(requisition.current_status) && (
                     <button
                       onClick={() => navigate(`/requisitions/edit/${id}`)}
                       className="px-4 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 flex items-center gap-2"
@@ -175,8 +207,8 @@ export default function ViewRequisitionPage() {
                 )}
                 <div className="flex items-center gap-2">
                   <span className="font-medium">Payee:</span>
-                  <span>{requisition.payee_name || 'N/A'}</span>
-                  <span className="text-gray-500 text-xs">({requisition.payee_type_display || requisition.payee_type})</span>
+                  <span>{getPayeeName()}</span>
+                  <span className="text-gray-500 text-xs">({getPayeeTypeDisplay()})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">Total Amount:</span>

@@ -9,13 +9,13 @@ import {
   submitRequisition,
   forwardRequisition,
   reviewAndForward,
+  // returnForRevision,
   approveRequisition,
   rejectRequisition,
   returnRequisition,
   getMyProcessedRequisitions,
   getTeamRequisitions
 } from './requisitionApi';
-
 import type { 
   RequisitionListParams, 
   RequisitionListResponse, 
@@ -54,27 +54,6 @@ export function useAssignedToMe(params?: Omit<RequisitionListParams, 'current_as
   return useRequisitions({
     ...params,
     current_assignee: 'me' as any,
-  });
-}
-export function useMyProcessedRequisitions() {
-  return useQuery({
-    queryKey: ['requisitions', 'my-processed'],
-    queryFn: getMyProcessedRequisitions,
-  });
-}
-/**
- * Hook to fetch team requisitions based on hierarchical access
- * @param filters - Optional filters for status, program, and search
- */
-export function useTeamRequisitions(filters?: {
-  status?: string;
-  program?: string;
-  search?: string;
-}) {
-  return useQuery({
-    queryKey: ['requisitions', 'team', filters],
-    queryFn: () => getTeamRequisitions(filters),
-    staleTime: 30 * 1000, // 30 seconds
   });
 }
 
@@ -192,16 +171,6 @@ export function useForwardRequisition() {
     },
   });
 }
-export function useReviewAndForward() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, comments }: { id: number; comments?: string }) =>
-      reviewAndForward({ id, comments }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
-    },
-  });
-}
 
 /**
  * Hook to delete a requisition
@@ -257,7 +226,7 @@ export function useRejectRequisition() {
 }
 
 /**
- * Hook to return a requisition for revision
+ * Hook to return a requisition for revision (OLD - for backward compatibility)
  */
 export function useReturnRequisition() {
   const queryClient = useQueryClient();
@@ -272,5 +241,63 @@ export function useReturnRequisition() {
       // Update the specific requisition in cache
       queryClient.setQueryData(['requisitions', returnedRequisition.id], returnedRequisition);
     },
+  });
+}
+
+/**
+ * Hook to review and forward a requisition to next approver
+ */
+export function useReviewAndForward() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, comments }: { id: number; comments?: string }) =>
+      reviewAndForward({ id, comments }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    },
+  });
+}
+
+/**
+ * Hook to return a requisition for revision (NEW - Centralized)
+ * Works for ALL approval stages: pending_review, pending_approval, etc.
+ */
+
+
+export function useReturnForRevision() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, comments }: { id: number; comments: string }) =>
+      returnRequisition(id, { comments }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    },
+  });
+}
+
+
+/**
+ * Hook to fetch requisitions processed by current user
+ */
+export function useMyProcessedRequisitions() {
+  return useQuery({
+    queryKey: ['requisitions', 'my-processed'],
+    queryFn: getMyProcessedRequisitions,
+  });
+}
+
+/**
+ * Hook to fetch team requisitions based on hierarchical access
+ * @param filters - Optional filters for status, program, and search
+ */
+export function useTeamRequisitions(filters?: {
+  status?: string;
+  program?: string;
+  search?: string;
+}) {
+  return useQuery({
+    queryKey: ['requisitions', 'team', filters],
+    queryFn: () => getTeamRequisitions(filters),
+    staleTime: 30 * 1000, // 30 seconds
   });
 }

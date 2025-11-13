@@ -19,6 +19,8 @@ export function RequisitionsTable({ requisitions, onDelete, isDeleting }: Requis
     return 'Unknown';
   };
 
+  const canEditStatuses = ['draft', 'returned_for_revision'];
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -68,7 +70,7 @@ export function RequisitionsTable({ requisitions, onDelete, isDeleting }: Requis
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end gap-3">
-                  {req.current_status === 'draft' ? (
+                  {canEditStatuses.includes(req.current_status) ? (
                     <>
                       <button
                         onClick={() => navigate(`/requisitions/edit/${req.id}`)}
@@ -77,13 +79,15 @@ export function RequisitionsTable({ requisitions, onDelete, isDeleting }: Requis
                       >
                         Edit
                       </button>
-                      <button
-                        onClick={() => onDelete(req.id, req.requisition_number)}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        disabled={isDeleting}
-                      >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                      </button>
+                      {req.current_status === 'draft' && (
+                        <button
+                          onClick={() => onDelete(req.id, req.requisition_number)}
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                      )}
                     </>
                   ) : (
                     <button

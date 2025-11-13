@@ -1,7 +1,8 @@
 // src/features/requisitions/ui/ReviewSection.tsx
 import { useState } from 'react';
-import { useReviewAndForward } from '../../api/useRequisitions';
+import { useReviewAndForward, useReturnForRevision } from '../../api/useRequisitions';
 import type { RequisitionResponse } from '../../api/types';
+
 
 interface ReviewSectionProps {
   requisition: RequisitionResponse;
@@ -11,6 +12,7 @@ interface ReviewSectionProps {
 export function ReviewSection({ requisition, onSuccess }: ReviewSectionProps) {
   const [comments, setComments] = useState('');
   const reviewMutation = useReviewAndForward();
+  const returnMutation = useReturnForRevision();
 
   const handleReviewAndForward = async () => {
     if (!comments.trim()) {
@@ -34,6 +36,33 @@ export function ReviewSection({ requisition, onSuccess }: ReviewSectionProps) {
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.message || 'Failed to review requisition';
+      alert(`Error: ${errorMessage}`);
+    }
+  };
+
+    const handleReturnForRevision = async () => {
+    if (!comments.trim()) {
+      alert('Please add comments before returning for revision');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to return this requisition for revision?')) {
+      return;
+    }
+
+    try {
+      await returnMutation.mutateAsync({
+        id: requisition.id,
+        comments: comments.trim(),
+      });
+
+      alert('Requisition returned for revision successfully!');
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || error.message || 'Failed to return requisition';
       alert(`Error: ${errorMessage}`);
     }
   };
@@ -70,10 +99,29 @@ export function ReviewSection({ requisition, onSuccess }: ReviewSectionProps) {
       </div>
 
       {/* Action Button */}
-      <div className="flex justify-end">
+            {/* Action Buttons */}
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={handleReturnForRevision}
+          disabled={returnMutation.isPending || reviewMutation.isPending || !comments.trim()}
+          className="px-6 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {returnMutation.isPending ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Processing...
+            </>
+          ) : (
+            <>
+              <span className="text-lg">↩</span>
+              Return for Revision
+            </>
+          )}
+        </button>
+
         <button
           onClick={handleReviewAndForward}
-          disabled={reviewMutation.isPending || !comments.trim()}
+          disabled={reviewMutation.isPending || returnMutation.isPending || !comments.trim()}
           className="px-6 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {reviewMutation.isPending ? (

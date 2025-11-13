@@ -170,10 +170,7 @@ const TeamOverviewView = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {requisition.prepared_by?.first_name} {requisition.prepared_by?.last_name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {requisition.prepared_by?.email}
+                        {requisition.prepared_by_name || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -187,13 +184,9 @@ const TeamOverviewView = () => {
                       <StatusBadge requisition={requisition} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {requisition.current_assignee ? (
-                        <div className="text-sm text-gray-900">
-                          {requisition.current_assignee.first_name} {requisition.current_assignee.last_name}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
+                      <div className="text-sm text-gray-900">
+                        {requisition.current_assignee_name || '-'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">

@@ -42,7 +42,7 @@ export default function Sidebar() {
           </Link>
 
           {/* Create New Requisition */}
-          <Link 
+          {/* <Link 
             to="/requisitions/create"
             className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
               location.pathname === '/requisitions/create' 
@@ -55,7 +55,7 @@ export default function Sidebar() {
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Create New
-          </Link>
+          </Link> */}
 
           {/* Assigned Requisitions - Only show for users with approval rights */}
           {user?.can_approve && (
@@ -78,7 +78,11 @@ export default function Sidebar() {
           {/* Reports */}
           <Link 
             to="/reports"
-            className="flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200"
+            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
+                location.pathname === '/reports' 
+                  ? 'text-white bg-ems-green-600' 
+                  : 'text-gray-700 hover:bg-gray-200'
+              }`}
           >
             <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

@@ -183,6 +183,25 @@ export function useRequisitionForm({
   const includePerDiemExpenses = methods.watch('includePerDiemExpenses');
   const includeSupportingDocuments = methods.watch('includeSupportingDocuments');
 
+  // Clear expense arrays when checkboxes are unchecked to prevent validation errors
+  useEffect(() => {
+    if (!includeGeneralExpenses && generalExpenses && generalExpenses.length > 0) {
+      methods.setValue('generalExpenses', []);
+    }
+  }, [includeGeneralExpenses, generalExpenses, methods]);
+
+  useEffect(() => {
+    if (!includeTravelExpenses && travelExpenses && travelExpenses.length > 0) {
+      methods.setValue('travelExpenses', []);
+    }
+  }, [includeTravelExpenses, travelExpenses, methods]);
+
+  useEffect(() => {
+    if (!includePerDiemExpenses && perDiemExpenses && perDiemExpenses.length > 0) {
+      methods.setValue('perDiemExpenses', []);
+    }
+  }, [includePerDiemExpenses, perDiemExpenses, methods]);
+
   // Determine if we should show financial summary
   const showFinancialSummary =
     (includeGeneralExpenses && includeTravelExpenses) ||
@@ -252,9 +271,11 @@ export function useRequisitionForm({
 
   // Handle submit (with validation)
   const handleSubmit = async () => {
+    console.log('🔍 handleSubmit called!'); // ← ADD THIS LINE
     try {
       // First, trigger React Hook Form validation
       const isValid = await methods.trigger();
+      console.log('✅ Form validation result:', isValid); 
 
       if (!isValid) {
         alert('Please fix all validation errors before submitting');
