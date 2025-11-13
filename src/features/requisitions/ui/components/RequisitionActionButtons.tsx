@@ -37,6 +37,20 @@ export function RequisitionActionButtons({
     );
   }
 
+  // Pending review - show Review button to navigate to view page
+  if (requisition.current_status === 'pending_review') {
+    return (
+      <div className="flex gap-2">
+        <button
+          onClick={() => navigate(`/requisitions/view/${requisition.id}`)}
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+        >
+          📋 Review
+        </button>
+      </div>
+    );
+  }
+
   // Pending approval/review - show Approve, Reject, Return buttons
   const approvalStatuses = [
     'pending_approval',

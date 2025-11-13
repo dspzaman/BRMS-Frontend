@@ -6,12 +6,14 @@ import { Footer } from "@/layouts/footer";
 import { RequisitionDetails } from '@/features/requisitions/ui/RequisitionDetails';
 import { useRequisition } from '@/features/requisitions/api/useRequisitions';
 import { StatusBadge } from '@/features/requisitions/ui/MyRequisitions/StatusBadge';
+import { ReviewSection } from '@/features/requisitions/ui/sections/ReviewSection';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 export default function ViewRequisitionPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: requisition, isLoading, error } = useRequisition(Number(id));
-
+  const { user } = useAuth();
   // Format date and time
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -182,9 +184,21 @@ export default function ViewRequisitionPage() {
                 </div>
               </div>
             </div>
+            {/* Review Section - Show if user is assignee and status is pending_review */}
+            {user && 
+             requisition.current_assignee === user.id && 
+             requisition.current_status === 'pending_review' && (
+              <div className="mb-6">
+                <ReviewSection 
+                  requisition={requisition} 
+                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                />
+              </div>
+            )}
 
             {/* Requisition Details Component */}
-            <RequisitionDetails requisition={requisition} />
+            <RequisitionDetails requisition={requisition} />    
+            
           </div>
           <Footer />
         </main>

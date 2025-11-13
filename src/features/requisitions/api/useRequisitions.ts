@@ -8,10 +8,14 @@ import {
   getMyDrafts,
   submitRequisition,
   forwardRequisition,
+  reviewAndForward,
   approveRequisition,
   rejectRequisition,
-  returnRequisition
+  returnRequisition,
+  getMyProcessedRequisitions,
+  getTeamRequisitions
 } from './requisitionApi';
+
 import type { 
   RequisitionListParams, 
   RequisitionListResponse, 
@@ -50,6 +54,27 @@ export function useAssignedToMe(params?: Omit<RequisitionListParams, 'current_as
   return useRequisitions({
     ...params,
     current_assignee: 'me' as any,
+  });
+}
+export function useMyProcessedRequisitions() {
+  return useQuery({
+    queryKey: ['requisitions', 'my-processed'],
+    queryFn: getMyProcessedRequisitions,
+  });
+}
+/**
+ * Hook to fetch team requisitions based on hierarchical access
+ * @param filters - Optional filters for status, program, and search
+ */
+export function useTeamRequisitions(filters?: {
+  status?: string;
+  program?: string;
+  search?: string;
+}) {
+  return useQuery({
+    queryKey: ['requisitions', 'team', filters],
+    queryFn: () => getTeamRequisitions(filters),
+    staleTime: 30 * 1000, // 30 seconds
   });
 }
 
@@ -164,6 +189,16 @@ export function useForwardRequisition() {
       
       // Update the specific requisition in cache
       queryClient.setQueryData(['requisitions', forwardedRequisition.id], forwardedRequisition);
+    },
+  });
+}
+export function useReviewAndForward() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, comments }: { id: number; comments?: string }) =>
+      reviewAndForward({ id, comments }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
     },
   });
 }

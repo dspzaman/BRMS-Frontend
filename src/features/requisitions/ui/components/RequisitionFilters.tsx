@@ -14,12 +14,11 @@ export function RequisitionFilters({ filters, onChange }: RequisitionFiltersProp
   const statusOptions = [
     { value: 'all', label: 'All Statuses' },
     { value: 'forwarded_for_submission', label: 'For Submission' },
+    { value: 'pending_review', label: 'Pending Review' },
     { value: 'pending_approval', label: 'Pending Approval' },
-    { value: 'initial_review', label: 'Initial Review' },
-    { value: 'manager_review', label: 'Manager Review' },
+    { value: 'ed_approval', label: 'ED Approval' },
+    { value: 'board_approval', label: 'Board Approval' },
     { value: 'account_confirmation', label: 'Account Confirmation' },
-    { value: 'top_management_review', label: 'Top Management Review' },
-    { value: 'board_review', label: 'Board Review' },
   ];
 
   return (

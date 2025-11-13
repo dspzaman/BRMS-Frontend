@@ -78,8 +78,9 @@ export function useRequisitionList() {
         ['pending_approval', 'initial_review', 'manager_review'].includes(r.current_status)
       ).length,
       forReview: requisitions.filter((r) =>
-        ['account_confirmation', 'top_management_review', 'board_review'].includes(r.current_status)
+        ['pending_review', 'account_confirmation', 'top_management_review', 'board_review'].includes(r.current_status)
       ).length,
+      
       total: requisitions.length,
     };
   }, [requisitions]);

@@ -308,6 +308,19 @@ export const deleteDocument = async (id: number): Promise<void> => {
   await apiClient.delete(`${BASE_URL}/supporting-documents/${id}/`);
 };
 
+/**
+ * Review and forward a requisition to next approver
+ */
+export const reviewAndForward = async (params: {
+  id: number;
+  comments?: string;
+}): Promise<RequisitionResponse> => {
+  const response = await apiClient.post<{ requisition: RequisitionResponse }>(
+    `${BASE_URL}/requisitions/${params.id}/review-and-forward/`,
+    { comments: params.comments || '' }
+  );
+  return response.data.requisition;
+};
 // ============================================================================
 // Query Helpers
 // ============================================================================
@@ -423,6 +436,44 @@ export const getSuggestedApprover = async (
   );
   return response.data;
 };
+/**
+ * Get requisitions processed by current user
+ */
+export const getMyProcessedRequisitions = async (): Promise<{
+  count: number;
+  results: RequisitionResponse[];
+}> => {
+  const response = await apiClient.get<{
+    count: number;
+    results: RequisitionResponse[];
+  }>(`${BASE_URL}/requisitions/my-processed/`);
+  return response.data;
+};
+
+/**
+ * Get team requisitions based on hierarchical access
+ * Supports filtering by status, program, and search query
+ */
+export const getTeamRequisitions = async (params?: {
+  status?: string;
+  program?: string;
+  search?: string;
+}): Promise<{
+  count: number;
+  results: RequisitionResponse[];
+}> => {
+  const response = await apiClient.get<{
+    count: number;
+    results: RequisitionResponse[];
+  }>(`${BASE_URL}/requisitions/team/`, {
+    params: {
+      status: params?.status || 'all',
+      program: params?.program || 'all',
+      search: params?.search || '',
+    },
+  });
+  return response.data;
+};
 
 // ============================================================================
 // Export all
@@ -441,10 +492,12 @@ export default {
   // Workflow
   submitRequisition,
   forwardRequisition,
+  reviewAndForward,
   approveRequisition,
   rejectRequisition,
   returnRequisition,
   cancelRequisition,
+  getMyProcessedRequisitions,
   
   // Documents
   uploadDocument,
@@ -456,6 +509,7 @@ export default {
   getForwardedToMe,
   getPendingApprovals,
   getReturnedToMe,
+  getTeamRequisitions,
   
   // Validation
   checkSubmissionAuthority,

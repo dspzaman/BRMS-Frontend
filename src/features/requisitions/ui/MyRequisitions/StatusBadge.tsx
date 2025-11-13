@@ -42,13 +42,56 @@ export function StatusBadge({ requisition }: StatusBadgeProps) {
     );
   }
 
+  // Pending Review
+  if (requisition.current_status === 'pending_review') {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#dbeafe', color: '#3b82f6' }}>
+        👀 Pending Review
+      </span>
+    );
+  }
+
+  // Pending Approval
+  if (requisition.current_status === 'pending_approval') {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#fef3c7', color: '#f59e0b' }}>
+        ⏳ Pending Approval
+      </span>
+    );
+  }
+
+  // ED Approval
+  if (requisition.current_status === 'ed_approval') {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#e0e7ff', color: '#6366f1' }}>
+        🔍 ED Approval
+      </span>
+    );
+  }
+
+  // Board Approval
+  if (requisition.current_status === 'board_approval') {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#fce7f3', color: '#ec4899' }}>
+        📋 Board Approval
+      </span>
+    );
+  }
+
+  // Account Confirmation
+  if (requisition.current_status === 'account_confirmation') {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#d1fae5', color: '#10b981' }}>
+        💰 Account Confirmation
+      </span>
+    );
+  }
+
   // In review statuses
   const reviewStatuses = [
     'initial_review',
     'manager_review',
-    'account_confirmation',
     'top_management_review',
-    'board_review'
   ];
   
   if (reviewStatuses.includes(requisition.current_status)) {

@@ -1,15 +1,69 @@
-import { useRequisitionList } from '../../hooks/useRequisitionList';
+import { useState } from 'react';
 import { useRequisitionActions } from '../../hooks/useRequisitionActions';
 import { RequisitionFilters } from '../components/RequisitionFilters';
 import { RequisitionActionButtons } from '../components/RequisitionActionButtons';
 import { StatusBadge } from '../MyRequisitions/StatusBadge';
 import { Link } from 'react-router-dom';
+import type { RequisitionResponse } from '../../api/types';
 
-export function AssignedRequisitions() {
-  const { requisitions, isLoading, filters, setFilters, summary, filteredCount, totalCount } =
-    useRequisitionList();
+interface AssignedRequisitionsProps {
+  data?: { count: number; results: RequisitionResponse[] };
+  isLoading: boolean;
+  error: any;
+  isProcessedView?: boolean;
+}
+
+export function AssignedRequisitions({ 
+  data, 
+  isLoading, 
+  error,
+  isProcessedView = false 
+}: AssignedRequisitionsProps) {
+  const [filters, setFilters] = useState({
+    status: 'all',
+    search: '',
+    sortBy: 'date' as 'date' | 'amount' | 'status',
+    sortOrder: 'desc' as 'asc' | 'desc',
+  });
+  
   const { handleSubmit, handleApprove, handleReject, handleReturn, isProcessing } =
     useRequisitionActions();
+
+  // Use data from props
+  const requisitions = data?.results || [];
+  const totalCount = data?.count || 0;
+
+  // Calculate summary for pending view only
+  const summary = isProcessedView ? null : {
+    total: requisitions.length,
+    forSubmission: requisitions.filter((r) => r.current_status === 'forwarded_for_submission').length,
+    forApproval: requisitions.filter((r) =>
+      ['pending_approval', 'initial_review', 'manager_review'].includes(r.current_status)
+    ).length,
+    forReview: requisitions.filter((r) =>
+      ['pending_review', 'account_confirmation', 'top_management_review', 'board_review'].includes(r.current_status)
+    ).length,
+  };
+
+  // Apply filters
+  const filteredRequisitions = requisitions.filter((req) => {
+    // Filter by status
+    if (filters.status !== 'all' && req.current_status !== filters.status) {
+      return false;
+    }
+    // Filter by search
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      return (
+        req.requisition_number?.toLowerCase().includes(searchLower) ||
+        req.prepared_by_name?.toLowerCase().includes(searchLower) ||
+        req.submitted_by_name?.toLowerCase().includes(searchLower)
+      );
+    }
+    return true;
+  });
+
+  const filteredCount = filteredRequisitions.length;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -61,10 +115,19 @@ export function AssignedRequisitions() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-800">Error loading requisitions: {error.message}</p>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      {/* Summary Cards - Only show for pending view */}
+      {!isProcessedView && summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="text-sm font-medium text-gray-500 mb-1">Total Assigned</div>
           <div className="text-3xl font-bold text-gray-900">{summary.total}</div>
@@ -77,11 +140,12 @@ export function AssignedRequisitions() {
           <div className="text-sm font-medium text-yellow-700 mb-1">For Approval</div>
           <div className="text-3xl font-bold text-yellow-900">{summary.forApproval}</div>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="text-sm font-medium text-blue-700 mb-1">For Review</div>
-          <div className="text-3xl font-bold text-blue-900">{summary.forReview}</div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="text-sm font-medium text-blue-700 mb-1">For Review</div>
+            <div className="text-3xl font-bold text-blue-900">{summary.forReview}</div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Filters */}
       <RequisitionFilters filters={filters} onChange={setFilters} />
@@ -92,7 +156,7 @@ export function AssignedRequisitions() {
       </div>
 
       {/* Requisitions Table */}
-      {requisitions.length === 0 ? (
+      {filteredRequisitions.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
           <div className="text-gray-400 text-lg mb-2">No requisitions found</div>
           <div className="text-gray-500 text-sm">
@@ -122,12 +186,12 @@ export function AssignedRequisitions() {
                   Date
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {isProcessedView ? 'Current Status' : 'Actions'}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {requisitions.map((requisition) => (
+              {filteredRequisitions.map((requisition) => (
                 <tr key={requisition.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link
@@ -150,14 +214,20 @@ export function AssignedRequisitions() {
                     {formatDate(requisition.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <RequisitionActionButtons
-                      requisition={requisition}
-                      onSubmit={(id) => handleAction('submit', id)}
-                      onApprove={(id, comments) => handleAction('approve', id, comments)}
-                      onReject={(id, comments) => handleAction('reject', id, comments)}
-                      onReturn={(id, comments) => handleAction('return', id, comments)}
-                      isProcessing={isProcessing}
-                    />
+                    {isProcessedView ? (
+                      <div className="flex justify-end">
+                        <StatusBadge requisition={requisition} />
+                      </div>
+                    ) : (
+                      <RequisitionActionButtons
+                        requisition={requisition}
+                        onSubmit={(id) => handleAction('submit', id)}
+                        onApprove={(id, comments) => handleAction('approve', id, comments)}
+                        onReject={(id, comments) => handleAction('reject', id, comments)}
+                        onReturn={(id, comments) => handleAction('return', id, comments)}
+                        isProcessing={isProcessing}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
