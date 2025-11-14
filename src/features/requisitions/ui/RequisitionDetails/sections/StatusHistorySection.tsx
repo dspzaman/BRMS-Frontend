@@ -1,6 +1,8 @@
 // src/features/requisitions/ui/RequisitionDetails/sections/StatusHistorySection.tsx
 import type { RequisitionResponse } from '../../../api/types';
 import { StatusTimelineItem } from '../components/StatusTimelineItem';
+import { STATUS_LABELS } from '../../../model/constants';
+
 
 interface StatusHistorySectionProps {
   requisition: RequisitionResponse;
@@ -45,6 +47,38 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
     return icons[status] || '📎';
   };
 
+  const getActionLabel = (statusItem: any) => {
+  const { status, action_status } = statusItem;
+
+  // Final completion
+  if (status === 'completed' && action_status === 'completed') {
+    return 'Completed';
+  }
+
+  if (action_status === 'approved') {
+    return 'Approved';
+  }
+  if (action_status === 'forwarded') {
+    return 'Forwarded';
+  }
+  if (action_status === 'returned') {
+    return 'Returned for revision';
+  }
+  if (action_status === 'rejected') {
+    return 'Rejected';
+  }
+  if (action_status === 'cancelled') {
+    return 'Cancelled';
+  }
+
+  // Fallback
+  if (action_status === 'pending' || !statusItem.completed_date) {
+    return 'In progress';
+  }
+
+  return 'Completed';
+};
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -55,16 +89,19 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
         <div className="space-y-4">
           {sortedHistory.map((statusItem, index) => {
             const isLast = index === sortedHistory.length - 1;
-            const statusDisplay = statusItem.status_display || statusItem.status;
+            const statusDisplay =
+                STATUS_LABELS[statusItem.status] || statusItem.status_display || statusItem.status;
+
             const assignedByName = statusItem.assigned_by_name || 'System';
             const assignedToName = statusItem.assigned_to_name || 'N/A';
             
             return (
               <div key={statusItem.id} className="flex gap-4">
                 <div className="flex flex-col items-center">
+                  
                   <div className={`w-3 h-3 rounded-full ${
-                    statusItem.completed_date 
-                      ? 'bg-ems-green-600' 
+                    statusItem.action_status === 'completed' || statusItem.action_status === 'forwarded'
+                      ? 'bg-ems-green-600'
                       : 'bg-gray-400'
                   }`}></div>
                   {!isLast && <div className="w-0.5 h-full bg-gray-300"></div>}
@@ -84,9 +121,10 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
                       "{statusItem.comments}"
                     </p>
                   )}
+                 
                   {statusItem.completed_date && (
                     <p className="text-xs text-gray-500 mt-1">
-                      Completed: {formatDateTime(statusItem.completed_date)}
+                      {getActionLabel(statusItem)}: {formatDateTime(statusItem.completed_date)}
                       {statusItem.completed_by_name && ` by ${statusItem.completed_by_name}`}
                     </p>
                   )}

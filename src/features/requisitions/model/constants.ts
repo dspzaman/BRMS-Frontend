@@ -59,6 +59,19 @@ export const REQUISITION_STATUS = {
   COMPLETED: 'completed',
 } as const;
 
+export const STATUS_LABELS: Record<string, string> = {
+  draft: 'Draft',
+  forwarded_for_submission: 'Forwarded for Submission',
+  pending_review: 'Review',
+  pending_approval: 'Approval',
+  returned_for_revision: 'Returned',
+  account_confirmation: 'Account Confirmation',
+  ed_approval: 'ED Approval',
+  board_approval: 'Board Approval',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
 // File Upload Constraints
 export const FILE_UPLOAD_CONSTRAINTS = {
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB

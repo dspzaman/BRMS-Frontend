@@ -1,4 +1,4 @@
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useWatch, type FieldPath } from 'react-hook-form';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { RequisitionFormData } from '../model/types';
@@ -40,7 +40,11 @@ export function useRequisitionForm({
   const forwardRequisitionMutation = useForwardRequisition();
 
   // Loading state for save operations
-  const isSaving = saveAsDraftMutation.isPending || updateDraftMutation.isPending || submitRequisitionMutation.isPending || forwardRequisitionMutation.isPending;
+  const isSaving =
+    saveAsDraftMutation.isPending ||
+    updateDraftMutation.isPending ||
+    submitRequisitionMutation.isPending ||
+    forwardRequisitionMutation.isPending;
 
   // Initialize React Hook Form with default values or initial data
   const methods = useForm<RequisitionFormData>({
@@ -82,6 +86,7 @@ export function useRequisitionForm({
       gstAmount: 0,
       totalWithTax: 0,
     },
+    shouldUnregister: true,
   });
 
   // Reset form with initialData when it changes (for edit mode)
@@ -207,6 +212,72 @@ export function useRequisitionForm({
     (includeGeneralExpenses && includeTravelExpenses) ||
     (includeTravelExpenses && includePerDiemExpenses);
 
+  // Shared validation used by Submit and Forward
+  const validateBeforeAction = async (): Promise<{
+    ok: boolean;
+    formData?: RequisitionFormData;
+  }> => {
+    // 1) Build the list of fields to validate
+    const fieldsToValidate: FieldPath<RequisitionFormData>[] = [
+      'requisitionDate',
+      'payeeType',
+      'payeeId',
+      'payeeOther',
+      'comments',
+    ];
+
+    if (includeGeneralExpenses) {
+      fieldsToValidate.push('generalExpenses');
+    }
+    if (includeTravelExpenses) {
+      fieldsToValidate.push('travelExpenses');
+    }
+    if (includePerDiemExpenses) {
+      fieldsToValidate.push('perDiemExpenses');
+    }
+    if (includeSupportingDocuments) {
+      fieldsToValidate.push('supportingDocuments');
+    }
+
+    const isValid = await methods.trigger(fieldsToValidate);
+    console.log('➡ includeGeneralExpenses:', includeGeneralExpenses);
+  console.log('➡ generalExpenses value:', methods.getValues('generalExpenses')); 
+  console.log('➡ errors:', methods.formState.errors);
+
+    if (!isValid) {
+      console.log('❌ Form validation failed:', methods.formState.errors);
+      alert('Please fix all validation errors before continuing');
+      return { ok: false };
+    }
+
+    // 2) Run custom validations
+    const validationError = runValidations([
+      () => validateGeneralExpenses(includeGeneralExpenses, methods.getValues),
+      () => validateTravelExpenses(includeTravelExpenses, methods.getValues),
+      () => validatePerDiemExpenses(includePerDiemExpenses, methods.getValues),
+      () => validateBasicInfo(methods.getValues),
+      () => validateSupportingDocuments(methods.getValues),
+    ]);
+
+    if (validationError) {
+      alert(validationError);
+      return { ok: false };
+    }
+
+    // 3) Check minimum amount ($20)
+    const formData = methods.getValues();
+    if (formData.totalWithTax < 20) {
+      alert(
+        `Requisition total must be at least $20.00. Current total: $${formData.totalWithTax.toFixed(
+          2,
+        )}`,
+      );
+      return { ok: false };
+    }
+
+    return { ok: true, formData };
+  };
+
   // Handle save as draft (no validation required)
   const handleSaveAsDraft = async () => {
     try {
@@ -271,39 +342,10 @@ export function useRequisitionForm({
 
   // Handle submit (with validation)
   const handleSubmit = async () => {
-    console.log('🔍 handleSubmit called!'); // ← ADD THIS LINE
+    console.log('🔍 handleSubmit called!');
     try {
-      // First, trigger React Hook Form validation
-      const isValid = await methods.trigger();
-      console.log('✅ Form validation result:', isValid); 
-
-      if (!isValid) {
-        alert('Please fix all validation errors before submitting');
-        return;
-      }
-
-      // Get form data
-      const formData = methods.getValues();
-
-      // Run all custom validations
-      const validationError = runValidations([
-        () => validateGeneralExpenses(includeGeneralExpenses, methods.getValues),
-        () => validateTravelExpenses(includeTravelExpenses, methods.getValues),
-        () => validatePerDiemExpenses(includePerDiemExpenses, methods.getValues),
-        () => validateBasicInfo(methods.getValues),
-        () => validateSupportingDocuments(methods.getValues),
-      ]);
-
-      if (validationError) {
-        alert(validationError);
-        return;
-      }
-
-      // Check minimum amount ($20)
-      if (formData.totalWithTax < 20) {
-        alert(`Requisition total must be at least $20.00. Current total: $${formData.totalWithTax.toFixed(2)}`);
-        return;
-      }
+      const { ok, formData } = await validateBeforeAction();
+      if (!ok || !formData) return;
 
       // Transform form data to API format
       const apiData = transformFormDataToAPI(formData);
@@ -380,36 +422,8 @@ export function useRequisitionForm({
   // Handle forward (with validation)
   const handleForward = async () => {
     try {
-      // First, trigger React Hook Form validation
-      const isValid = await methods.trigger();
-
-      if (!isValid) {
-        alert('Please fix all validation errors before forwarding');
-        return;
-      }
-
-      // Get form data
-      const formData = methods.getValues();
-
-      // Run all custom validations
-      const validationError = runValidations([
-        () => validateGeneralExpenses(includeGeneralExpenses, methods.getValues),
-        () => validateTravelExpenses(includeTravelExpenses, methods.getValues),
-        () => validatePerDiemExpenses(includePerDiemExpenses, methods.getValues),
-        () => validateBasicInfo(methods.getValues),
-        () => validateSupportingDocuments(methods.getValues),
-      ]);
-
-      if (validationError) {
-        alert(validationError);
-        return;
-      }
-
-      // Check minimum amount ($20)
-      if (formData.totalWithTax < 20) {
-        alert(`Requisition total must be at least $20.00. Current total: $${formData.totalWithTax.toFixed(2)}`);
-        return;
-      }
+      const { ok, formData } = await validateBeforeAction();
+      if (!ok || !formData) return;
 
       // Transform form data to API format
       const apiData = transformFormDataToAPI(formData);
@@ -462,7 +476,9 @@ export function useRequisitionForm({
       // Step 2: Forward the requisition with comments
       const forwardedRequisition = await forwardRequisitionMutation.mutateAsync({
         id: requisitionToForward,
-        comments: formData.comments || 'Forwarded for submission - amount exceeds my submission threshold',
+        comments:
+          formData.comments ||
+          'Forwarded for submission - amount exceeds my submission threshold',
       });
 
       // Success! Show who it was forwarded to
@@ -505,6 +521,8 @@ export function useRequisitionForm({
     } else if (!includeGeneralExpenses) {
       // Clear when unchecking
       methods.setValue('generalExpenses', []);
+      methods.clearErrors('generalExpenses');
+      methods.unregister('generalExpenses');
     }
   }, [includeGeneralExpenses, methods, defaultProgram]);
 

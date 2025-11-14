@@ -1,4 +1,5 @@
 import type { RequisitionResponse } from '../../api/types';
+import { STATUS_LABELS } from '../../model/constants';
 
 interface StatusBadgeProps {
   requisition: RequisitionResponse;
@@ -129,11 +130,15 @@ export function StatusBadge({ requisition }: StatusBadgeProps) {
       </span>
     );
   }
+  const label =
+  STATUS_LABELS[requisition.current_status] ||
+  requisition.current_status_display ||
+  requisition.current_status;
 
-  // Fallback
-  return (
-    <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-      {requisition.current_status_display || requisition.current_status}
-    </span>
-  );
+return (
+  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+    {label}
+  </span>
+);
+  
 }

@@ -57,7 +57,10 @@ export function useRequisitionList() {
           comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
         case 'amount':
-          comparison = (a.total_with_tax || 0) - (b.total_with_tax || 0);
+            const aAmount = Number(a.total_with_tax ?? 0);
+            const bAmount = Number(b.total_with_tax ?? 0);
+            comparison = aAmount - bAmount;
+
           break;
         case 'status':
           comparison = a.current_status.localeCompare(b.current_status);
@@ -75,10 +78,10 @@ export function useRequisitionList() {
     return {
       forSubmission: requisitions.filter((r) => r.current_status === 'forwarded_for_submission').length,
       forApproval: requisitions.filter((r) =>
-        ['pending_approval', 'initial_review', 'manager_review'].includes(r.current_status)
+        ['pending_approval', 'account_confirmation', 'ed_approval', 'board_approval'].includes(r.current_status)
       ).length,
       forReview: requisitions.filter((r) =>
-        ['pending_review', 'account_confirmation', 'top_management_review', 'board_review'].includes(r.current_status)
+        ['pending_review'].includes(r.current_status)
       ).length,
       
       total: requisitions.length,

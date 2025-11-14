@@ -33,31 +33,30 @@ export function MyRequisitionsView() {
       if (activeTab === 'draft') {
         return req.current_status === 'draft' && req.revision_count === 0;
       }
-      
+
       if (activeTab === 'returned') {
-        return req.current_status === 'draft' && req.revision_count > 0;
+        return req.current_status === 'returned_for_revision' && req.revision_count > 0;
       }
-      
+
       if (activeTab === 'submitted') {
         return [
-          'submitted',
           'forwarded_for_submission',
-          'initial_review',
-          'manager_review',
+          'pending_review',
+          'pending_approval',
           'account_confirmation',
-          'top_management_review',
-          'board_review'
+          'ed_approval',
+          'board_approval',
         ].includes(req.current_status);
       }
-      
+
       if (activeTab === 'approved') {
         return req.current_status === 'completed';
       }
-      
+
       if (activeTab === 'rejected') {
         return ['cancelled', 'rejected'].includes(req.current_status);
       }
-      
+
       return true; // 'all' tab
     });
   }, [allRequisitions, activeTab]);
@@ -69,13 +68,12 @@ export function MyRequisitionsView() {
       draft: allRequisitions.filter(r => r.current_status === 'draft' && r.revision_count === 0).length,
       returned: allRequisitions.filter(r => r.current_status === 'draft' && r.revision_count > 0).length,
       submitted: allRequisitions.filter(r => [
-        'submitted',
         'forwarded_for_submission',
-        'initial_review',
-        'manager_review',
+        'pending_review',
+        'pending_approval',
         'account_confirmation',
-        'top_management_review',
-        'board_review'
+        'ed_approval',
+        'board_approval',
       ].includes(r.current_status)).length,
       approved: allRequisitions.filter(r => r.current_status === 'completed').length,
       rejected: allRequisitions.filter(r => ['cancelled', 'rejected'].includes(r.current_status)).length,
@@ -104,33 +102,7 @@ export function MyRequisitionsView() {
   return (
     <>
       {/* Header with New Button */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">All Requisitions</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            View and manage your expense requisitions
-          </p>
-        </div>
-        <Link
-          to="/requisitions/create"
-          className="px-4 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 font-medium flex items-center"
-        >
-          <svg
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          New Requisition
-        </Link>
-      </div>
+      
 
       {/* Status Tabs */}
       <div className="border-b border-gray-200 mb-6">
@@ -149,11 +121,10 @@ export function MyRequisitionsView() {
             >
               {tab.label}
               {tab.count > 0 && (
-                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs ${
-                  activeTab === tab.key
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs ${activeTab === tab.key
                     ? 'bg-ems-green-100 text-ems-green-600'
                     : 'bg-gray-100 text-gray-600'
-                }`}>
+                  }`}>
                   {tab.count}
                 </span>
               )}
@@ -209,8 +180,8 @@ export function MyRequisitionsView() {
             {searchQuery
               ? 'Try adjusting your search criteria'
               : activeTab === 'all'
-              ? 'Get started by creating your first requisition'
-              : `You don't have any ${activeTab} requisitions yet`
+                ? 'Get started by creating your first requisition'
+                : `You don't have any ${activeTab} requisitions yet`
             }
           </p>
           {activeTab === 'all' && !searchQuery && (
@@ -249,7 +220,7 @@ export function MyRequisitionsView() {
             <div className="text-sm text-gray-500">
               Showing {((currentPage - 1) * 20) + 1} to {Math.min(currentPage * 20, data?.count || 0)} of {data?.count || 0} requisitions
             </div>
-            
+
             {data && (
               <PaginationControls
                 currentPage={currentPage}
