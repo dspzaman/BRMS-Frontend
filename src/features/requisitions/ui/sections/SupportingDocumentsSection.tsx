@@ -5,8 +5,8 @@ import { EmptyState } from "../shared/EmptyState";
 import { useState, useEffect } from "react";
 import { ROW_LIMITS, ROW_LIMIT_MESSAGES } from "../../model/constants";
 
-interface SupportingDocumentsSectionProps {
-}
+// interface SupportingDocumentsSectionProps {
+// }
 
 export function SupportingDocumentsSection() {
   const { control, watch } = useFormContext<RequisitionFormData>();

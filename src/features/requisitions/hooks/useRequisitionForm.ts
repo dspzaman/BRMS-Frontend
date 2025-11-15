@@ -503,7 +503,7 @@ export function useRequisitionForm({
 
   // Initialize or clear expense arrays when toggling checkboxes
   useEffect(() => {
-    const currentGeneralExpenses = methods.getValues('generalExpenses');
+    const currentGeneralExpenses = methods.getValues('generalExpenses') || [];
 
     if (includeGeneralExpenses && currentGeneralExpenses.length === 0) {
       // Initialize with one empty row when checking

@@ -107,14 +107,7 @@ export default function ProfileOverview({ onEdit }: ProfileOverviewProps) {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Organization Information</h3>
         <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Organization</dt>
-            <dd className="mt-1 text-sm text-gray-900">{user.organization_name || '-'}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Department</dt>
-            <dd className="mt-1 text-sm text-gray-900">{user.department_name || '-'}</dd>
-          </div>
+          
           <div>
             <dt className="text-sm font-medium text-gray-500">Primary Program</dt>
             <dd className="mt-1 text-sm text-gray-900">{user.primary_program_name || '-'}</dd>
@@ -133,21 +126,24 @@ export default function ProfileOverview({ onEdit }: ProfileOverviewProps) {
           <div>
             <dt className="text-sm font-medium text-gray-500">Submission Limit</dt>
             <dd className="mt-1 text-sm text-gray-900">
-              {user.max_submission_threshold 
-                ? `$${user.max_submission_threshold.toLocaleString()}`
-                : 'Unlimited'
-              }
-            </dd>
+  {user.max_submission_threshold != null
+    ? `$${user.max_submission_threshold.toLocaleString()}`
+    : '-'
+  }
+</dd>
           </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Approval Limit</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {user.max_approval_threshold 
-                ? `$${user.max_approval_threshold.toLocaleString()}`
-                : 'Unlimited'
-              }
-            </dd>
-          </div>
+          
+          {user.can_approve && (
+  <div>
+    <dt className="text-sm font-medium text-gray-500">Approval Limit</dt>
+    <dd className="mt-1 text-sm text-gray-900">
+      {user.max_approval_threshold != null
+        ? `$${user.max_approval_threshold.toLocaleString()}`
+        : '-'
+      }
+    </dd>
+  </div>
+)}
           <div>
             <dt className="text-sm font-medium text-gray-500">Can Approve</dt>
             <dd className="mt-1 text-sm text-gray-900">

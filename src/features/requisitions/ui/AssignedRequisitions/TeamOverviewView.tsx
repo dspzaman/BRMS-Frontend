@@ -7,7 +7,7 @@ import { StatusBadge } from '../MyRequisitions/StatusBadge';
 const TeamOverviewView = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [filters, setFilters] = useState({
     status: 'all',
     program: 'all',
@@ -60,15 +60,14 @@ const TeamOverviewView = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Statuses</option>
-              <option value="submitted">Submitted</option>
-              <option value="forwarded_for_submission">For Submission</option>
-              <option value="pending_review">Pending Review</option>
-              <option value="pending_approval">Pending Approval</option>
+              <option value="forwarded_for_submission">Forwarded For Submission</option>
+              <option value="pending_review">Review</option>
+              <option value="pending_approval">Approval</option>
+              <option value="account_confirmation">Account Confirmation</option>
               <option value="ed_approval">ED Approval</option>
               <option value="board_approval">Board Approval</option>
-              <option value="account_confirmation">Account Confirmation</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
@@ -175,8 +174,8 @@ const TeamOverviewView = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        ${typeof requisition.total_with_tax === 'number' 
-                          ? requisition.total_with_tax.toFixed(2) 
+                        ${typeof requisition.total_with_tax === 'number'
+                          ? requisition.total_with_tax.toFixed(2)
                           : parseFloat(requisition.total_with_tax || '0').toFixed(2)}
                       </div>
                     </td>

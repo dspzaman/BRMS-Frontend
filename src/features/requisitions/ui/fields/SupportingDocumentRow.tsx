@@ -132,6 +132,28 @@ export function SupportingDocumentRow({
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
             />
           </div>
+          <div>
+            <input
+  type="hidden"
+  {...register(`supportingDocuments.${index}.fileName`)}
+/>
+<input
+  type="hidden"
+  {...register(`supportingDocuments.${index}.fileSize`)}
+/>
+<input
+  type="hidden"
+  {...register(`supportingDocuments.${index}.fileUrl`)}
+/>
+<input
+  type="hidden"
+  {...register(`supportingDocuments.${index}.uploadedDocumentId`)}
+/>
+<input
+  type="hidden"
+  {...register(`supportingDocuments.${index}.uploadedAt`)}
+/>
+          </div>
         </div>
 
         {/* File Preview/Info */}

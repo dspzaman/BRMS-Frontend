@@ -1,3 +1,4 @@
+// src/features/requisitions/ui/AssignedRequisitions/index.tsx
 import { useState } from 'react';
 import { useRequisitionActions } from '../../hooks/useRequisitionActions';
 import { RequisitionFilters } from '../components/RequisitionFilters';
@@ -45,7 +46,7 @@ export function AssignedRequisitions({
     ).length,
   };
 
-  // Apply filters
+  // Apply filters (status + search)
   const filteredRequisitions = requisitions.filter((req) => {
     // Filter by status
     if (filters.status !== 'all' && req.current_status !== filters.status) {
@@ -63,7 +64,33 @@ export function AssignedRequisitions({
     return true;
   });
 
-  const filteredCount = filteredRequisitions.length;
+  // Apply sorting
+  const sortedRequisitions = [...filteredRequisitions].sort((a, b) => {
+    let comparison = 0;
+
+    switch (filters.sortBy) {
+      case 'date': {
+        const aTime = new Date(a.created_at).getTime();
+        const bTime = new Date(b.created_at).getTime();
+        comparison = aTime - bTime;
+        break;
+      }
+      case 'amount': {
+        const aAmount = Number(a.total_with_tax ?? 0);
+        const bAmount = Number(b.total_with_tax ?? 0);
+        comparison = aAmount - bAmount;
+        break;
+      }
+      case 'status': {
+        comparison = a.current_status.localeCompare(b.current_status);
+        break;
+      }
+    }
+
+    return filters.sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  const filteredCount = sortedRequisitions.length;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -128,18 +155,18 @@ export function AssignedRequisitions({
       {/* Summary Cards - Only show for pending view */}
       {!isProcessedView && summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="text-sm font-medium text-gray-500 mb-1">Total Assigned</div>
-          <div className="text-3xl font-bold text-gray-900">{summary.total}</div>
-        </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-          <div className="text-sm font-medium text-orange-700 mb-1">For Submission</div>
-          <div className="text-3xl font-bold text-orange-900">{summary.forSubmission}</div>
-        </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <div className="text-sm font-medium text-yellow-700 mb-1">For Approval</div>
-          <div className="text-3xl font-bold text-yellow-900">{summary.forApproval}</div>
-        </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="text-sm font-medium text-gray-500 mb-1">Total Assigned</div>
+            <div className="text-3xl font-bold text-gray-900">{summary.total}</div>
+          </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+            <div className="text-sm font-medium text-orange-700 mb-1">For Submission</div>
+            <div className="text-3xl font-bold text-orange-900">{summary.forSubmission}</div>
+          </div>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div className="text-sm font-medium text-yellow-700 mb-1">For Approval</div>
+            <div className="text-3xl font-bold text-yellow-900">{summary.forApproval}</div>
+          </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <div className="text-sm font-medium text-blue-700 mb-1">For Review</div>
             <div className="text-3xl font-bold text-blue-900">{summary.forReview}</div>
@@ -156,7 +183,7 @@ export function AssignedRequisitions({
       </div>
 
       {/* Requisitions Table */}
-      {filteredRequisitions.length === 0 ? (
+      {sortedRequisitions.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
           <div className="text-gray-400 text-lg mb-2">No requisitions found</div>
           <div className="text-gray-500 text-sm">
@@ -191,7 +218,7 @@ export function AssignedRequisitions({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredRequisitions.map((requisition) => (
+              {sortedRequisitions.map((requisition) => (
                 <tr key={requisition.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link
@@ -205,7 +232,7 @@ export function AssignedRequisitions({
                     {requisition.prepared_by_name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatCurrency(requisition.total_with_tax || 0)}
+                    {formatCurrency(Number(requisition.total_with_tax || 0))}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusBadge requisition={requisition} />
