@@ -12,14 +12,16 @@ interface RequisitionFiltersProps {
 
 export function RequisitionFilters({ filters, onChange }: RequisitionFiltersProps) {
   const statusOptions = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'forwarded_for_submission', label: 'For Submission' },
-    { value: 'pending_review', label: 'Pending Review' },
-    { value: 'pending_approval', label: 'Pending Approval' },
-    { value: 'ed_approval', label: 'ED Approval' },
-    { value: 'board_approval', label: 'Board Approval' },
-    { value: 'account_confirmation', label: 'Account Confirmation' },
-  ];
+  { value: 'all', label: 'All Statuses' },
+  { value: 'forwarded_for_submission', label: 'For Submission' },
+  { value: 'pending_review', label: 'Pending Review' },
+  { value: 'pending_approval', label: 'Pending Approval' },
+  { value: 'returned_for_revision', label: 'Returned for Revision' },  // ← add this
+  { value: 'ed_approval', label: 'ED Approval' },
+  { value: 'board_approval', label: 'Board Approval' },
+  { value: 'account_confirmation', label: 'Account Confirmation' },
+];
+
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">

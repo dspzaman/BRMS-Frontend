@@ -14,6 +14,8 @@ import AssignedRequisitionsPage from "@/pages/Requisitions/AssignedRequisitionsP
 import EditRequisitionPage from "@/pages/Requisitions/EditRequisitionPage";
 import ViewRequisitionPage from "@/pages/Requisitions/ViewRequisitionPage";
 import ViewReports from "@/pages/Reports/viewReports";
+import ApproveRequisitionPage from "@/pages/Requisitions/ApproveRequisitionPage";
+
 
 /**
  * Protects routes that require authentication.
@@ -148,17 +150,17 @@ export default function App() {
         }
       />
 
-      
+
       <Route
-      path="/requisitions/assigned"
-      element={
-        <ProtectedRoute>
-          <ApproverRoute>
-            <AssignedRequisitionsPage />
-          </ApproverRoute>
-        </ProtectedRoute>
-      }
-    />
+        path="/requisitions/assigned"
+        element={
+          <ProtectedRoute>
+            <ApproverRoute>
+              <AssignedRequisitionsPage />
+            </ApproverRoute>
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/requisitions/edit/:id"
@@ -174,6 +176,17 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ViewRequisitionPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/requisitions/approve/:id"
+        element={
+          <ProtectedRoute>
+            <ApproverRoute>
+              <ApproveRequisitionPage />
+            </ApproverRoute>
           </ProtectedRoute>
         }
       />

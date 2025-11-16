@@ -222,6 +222,8 @@ export function transformFormDataToAPI(
  * Used when editing an existing requisition
  */
 export function transformAPIToFormData(apiData: RequisitionResponse): RequisitionFormData {
+
+  
   // Use the payee_type field from API response
   const payeeType: RequisitionFormData['payeeType'] = apiData.payee_type || null;
   

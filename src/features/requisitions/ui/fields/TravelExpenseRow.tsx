@@ -84,7 +84,8 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
       }
     }
   }, [travelExpenseTypes, expenseCode, category, index, setValue]);
-  
+    
+
   // Handle expense type change - update both expenseCode and category
   const handleExpenseTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCategoryId = parseInt(e.target.value);
@@ -137,6 +138,8 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
     return (km * rate).toFixed(2);
   };
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   return (
     <div className="border border-gray-300 rounded-lg p-4">
       {/* Row Header */}
@@ -154,6 +157,13 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
           </button>
         )}
       </div>
+      {/* Hidden field to ensure expenseCode is registered */}
+    <input
+      type="hidden"
+      {...register(`travelExpenses.${index}.expenseCode`, {
+        valueAsNumber: true,
+      })}
+    />
 
       {/* Form Fields Grid - Single Row */}
       <div className="grid grid-cols-12 gap-3">
@@ -216,13 +226,31 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Date <span className="text-red-500">*</span>
           </label>
-          <input
+          {/* <input
             type="date"
             {...register(`travelExpenses.${index}.travelDate`, {
               required: "Date is required",
             })}
             className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
-          />
+          /> */}
+          <input
+  type="date"
+  max={todayStr}
+  {...register(`travelExpenses.${index}.travelDate`, {
+    required: "Date is required",
+    // you can keep or remove the custom validate; max will handle most cases
+    validate: (value) => {
+      if (!value) return true;
+      const [year, month, day] = value.split('-').map(Number);
+      const selected = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selected <= today || "Travel date cannot be in the future";
+    },
+  })}
+  className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-ems-green-500 focus:border-ems-green-500"
+/>
+          
           {errors.travelExpenses?.[index]?.travelDate && (
             <p className="mt-1 text-xs text-red-600">
               {errors.travelExpenses[index]?.travelDate?.message}

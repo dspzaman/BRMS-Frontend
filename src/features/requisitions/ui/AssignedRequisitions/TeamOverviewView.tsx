@@ -57,11 +57,12 @@ const TeamOverviewView = () => {
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
             >
               <option value="all">All Statuses</option>
               <option value="forwarded_for_submission">Forwarded For Submission</option>
               <option value="pending_review">Review</option>
+              <option value="returned_for_revision">Returned for Revision</option>
               <option value="pending_approval">Approval</option>
               <option value="account_confirmation">Account Confirmation</option>
               <option value="ed_approval">ED Approval</option>
@@ -72,7 +73,7 @@ const TeamOverviewView = () => {
           </div>
 
           {/* Program Filter - Only show for Program Directors and ED */}
-          {(userRole === 'program_director' || userRole === 'executive_director') && (
+          {(userRole === 'program_director' || userRole === 'top_management' || userRole === 'executive_director') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Program
@@ -80,7 +81,7 @@ const TeamOverviewView = () => {
               <select
                 value={filters.program}
                 onChange={(e) => setFilters({ ...filters, program: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
               >
                 <option value="all">All Programs</option>
                 {user?.programs?.map((prog) => (
@@ -102,7 +103,7 @@ const TeamOverviewView = () => {
               placeholder="Requisition #, title, or staff name..."
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
             />
           </div>
         </div>

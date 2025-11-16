@@ -246,14 +246,7 @@ export function AssignedRequisitions({
                         <StatusBadge requisition={requisition} />
                       </div>
                     ) : (
-                      <RequisitionActionButtons
-                        requisition={requisition}
-                        onSubmit={(id) => handleAction('submit', id)}
-                        onApprove={(id, comments) => handleAction('approve', id, comments)}
-                        onReject={(id, comments) => handleAction('reject', id, comments)}
-                        onReturn={(id, comments) => handleAction('return', id, comments)}
-                        isProcessing={isProcessing}
-                      />
+                      <RequisitionActionButtons requisition={requisition} />
                     )}
                   </td>
                 </tr>

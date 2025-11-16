@@ -94,6 +94,8 @@ export default function EditRequisitionPage() {
 
   // Transform API data to form data
   const initialData = transformAPIToFormData(requisition);
+  console.log('🔍 initialData.travelExpenses:', initialData.travelExpenses);
+console.log('🔍 initialData.includeTravelExpenses:', initialData.includeTravelExpenses);
 
   return (
     <div className="min-h-screen bg-gray-50">

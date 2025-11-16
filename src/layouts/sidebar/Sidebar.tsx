@@ -62,7 +62,8 @@ export default function Sidebar() {
             <Link 
               to="/requisitions/assigned"
               className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
-                location.pathname === '/requisitions/assigned' 
+                location.pathname === '/requisitions/assigned' || location.pathname.startsWith('/requisitions/approve/')
+  
                   ? 'text-white bg-ems-green-600' 
                   : 'text-gray-700 hover:bg-gray-200'
               }`}

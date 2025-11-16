@@ -114,6 +114,10 @@ export interface PerDiemExpenseLineItemResponse {
   line_order: number;
   created_at: string;
   updated_at: string;
+
+  expense_category: number;
+  expense_category_name?: string;
+
 }
 
 export interface RequisitionResponse {

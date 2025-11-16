@@ -141,7 +141,7 @@ export function MyRequisitionsView() {
             placeholder="Search by requisition ID, title, or payee name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-ems-green-500 focus:border-ems-green-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
           />
         </div>
       </div>

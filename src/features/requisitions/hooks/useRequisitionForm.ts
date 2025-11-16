@@ -93,6 +93,8 @@ export function useRequisitionForm({
   useEffect(() => {
     if (initialData) {
       methods.reset(initialData);
+          
+
     }
   }, [initialData, methods]);
 
@@ -196,13 +198,13 @@ export function useRequisitionForm({
   }, [includeGeneralExpenses, generalExpenses, methods]);
 
   useEffect(() => {
-    if (!includeTravelExpenses && travelExpenses && travelExpenses.length > 0) {
+    if (includeTravelExpenses === false && travelExpenses && travelExpenses.length > 0) {
       methods.setValue('travelExpenses', []);
     }
   }, [includeTravelExpenses, travelExpenses, methods]);
 
   useEffect(() => {
-    if (!includePerDiemExpenses && perDiemExpenses && perDiemExpenses.length > 0) {
+    if (includePerDiemExpenses === false && perDiemExpenses && perDiemExpenses.length > 0) {
       methods.setValue('perDiemExpenses', []);
     }
   }, [includePerDiemExpenses, perDiemExpenses, methods]);
@@ -240,12 +242,9 @@ export function useRequisitionForm({
     }
 
     const isValid = await methods.trigger(fieldsToValidate);
-    console.log('➡ includeGeneralExpenses:', includeGeneralExpenses);
-  console.log('➡ generalExpenses value:', methods.getValues('generalExpenses')); 
-  console.log('➡ errors:', methods.formState.errors);
+    
 
     if (!isValid) {
-      console.log('❌ Form validation failed:', methods.formState.errors);
       alert('Please fix all validation errors before continuing');
       return { ok: false };
     }
@@ -342,7 +341,6 @@ export function useRequisitionForm({
 
   // Handle submit (with validation)
   const handleSubmit = async () => {
-    console.log('🔍 handleSubmit called!');
     try {
       const { ok, formData } = await validateBeforeAction();
       if (!ok || !formData) return;
@@ -527,7 +525,8 @@ export function useRequisitionForm({
   }, [includeGeneralExpenses, methods, defaultProgram]);
 
   useEffect(() => {
-    if (!includeTravelExpenses) {
+    if (includeTravelExpenses === false) {
+
       methods.setValue('travelExpenses', []);
       methods.setValue('includePerDiemExpenses', false);
       methods.setValue('perDiemExpenses', []);
@@ -535,7 +534,7 @@ export function useRequisitionForm({
   }, [includeTravelExpenses, methods]);
 
   useEffect(() => {
-    if (!includePerDiemExpenses && includeTravelExpenses) {
+    if (includePerDiemExpenses === false && includeTravelExpenses) {
       methods.setValue('perDiemExpenses', []);
     }
   }, [includePerDiemExpenses, includeTravelExpenses, methods]);

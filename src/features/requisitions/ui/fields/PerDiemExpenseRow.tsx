@@ -150,6 +150,14 @@ export function PerDiemExpenseRow({ index, onRemove, canRemove, isNewRow = false
           </button>
         )}
       </div>
+      {/* Hidden field to ensure expenseCode is registered */}
+    <input
+  type="hidden"
+  {...register(`perDiemExpenses.${index}.expenseCode`, {
+    valueAsNumber: true,
+  })}
+/>
+
 
       {/* Form Fields */}
       <div className="space-y-3">
