@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useUpdateProfile, useUploadProfilePicture } from "../model/hooks";
 import { getMediaUrl } from "@/shared/api/client";
@@ -16,8 +17,6 @@ export default function EditProfile({ onSuccess }: EditProfileProps) {
   const [lastName, setLastName] = useState(user?.last_name || "");
   const [phone, setPhone] = useState(user?.phone || user?.phone_number || "");
   const [address, setAddress] = useState(user?.address || "");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(
     getMediaUrl(user?.profile_picture) || null
   );
@@ -34,13 +33,13 @@ export default function EditProfile({ onSuccess }: EditProfileProps) {
     if (file) {
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setError("Image size must be less than 5MB");
+        toast.error("Image size must be less than 5MB");
         return;
       }
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setError("Please select an image file");
+        toast.error("Please select an image file");
         return;
       }
 
@@ -58,12 +57,10 @@ export default function EditProfile({ onSuccess }: EditProfileProps) {
           if (response.profile_picture) {
             setPreviewImage(getMediaUrl(response.profile_picture));
           }
-          setSuccess(true);
-          setError(null);
-          setTimeout(() => setSuccess(false), 3000);
+          toast.success('Profile picture updated successfully!');
         },
         onError: (err: any) => {
-          setError(err?.response?.data?.error || "Failed to upload image");
+          toast.error(err?.response?.data?.error || "Failed to upload image");
           // Revert preview on error
           setPreviewImage(getMediaUrl(user?.profile_picture) || null);
         }
@@ -73,7 +70,6 @@ export default function EditProfile({ onSuccess }: EditProfileProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
 
     updateProfileMutation.mutate(
       {
@@ -84,14 +80,13 @@ export default function EditProfile({ onSuccess }: EditProfileProps) {
       },
       {
         onSuccess: () => {
-          setSuccess(true);
+          toast.success('Profile updated successfully!');
           setTimeout(() => {
-            setSuccess(false);
             onSuccess();
-          }, 2000);
+          }, 1000);
         },
         onError: (err: any) => {
-          setError(err?.response?.data?.error || "Failed to update profile");
+          toast.error(err?.response?.data?.error || "Failed to update profile");
         }
       }
     );
@@ -99,30 +94,6 @@ export default function EditProfile({ onSuccess }: EditProfileProps) {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <div className="rounded-md bg-green-50 border border-green-200 p-4">
-          <div className="flex">
-            <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <p className="ml-3 text-sm text-green-800">Profile updated successfully!</p>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 p-4">
-          <div className="flex">
-            <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <p className="ml-3 text-sm text-red-800">{error}</p>
-          </div>
-        </div>
-      )}
-
       {/* Profile Picture Upload */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Picture</h3>

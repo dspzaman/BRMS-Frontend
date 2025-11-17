@@ -7,6 +7,7 @@ import { useRequisition } from '@/features/requisitions/api/useRequisitions';
 import { StatusHistorySection } from '@/features/requisitions/ui/RequisitionDetails/sections/StatusHistorySection';
 import { StatusBadge } from '@/features/requisitions/ui/MyRequisitions/StatusBadge';
 import { useAuth } from '@/shared/contexts/AuthContext';
+import ApprovalWorkspace from '@/features/requisitions/ui/ApprovalWorkspace';
 
 export default function ApproveRequisitionPage() {
   const { id } = useParams<{ id: string }>();
@@ -220,17 +221,9 @@ export default function ApproveRequisitionPage() {
               </div>
             </div>
 
-            {/* Placeholder for approval workspace */}
+            {/* Approval Workspace */}
             <div className="space-y-6">
-              <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-600">
-                <p className="text-lg font-semibold mb-2">
-                  Approval component will go here
-                </p>
-                <p className="text-sm">
-                  This area will contain the approval workspace UI for assigning budget lines
-                  and performing approve / reject / return actions.
-                </p>
-              </div>
+              <ApprovalWorkspace requisitionId={requisition.id} />
 
               {/* Status history for context */}
               <StatusHistorySection requisition={requisition} />

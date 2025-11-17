@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form';
+import toast from 'react-hot-toast';
 import type { RequisitionFormData } from '../../model/types';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useMemo } from 'react';
@@ -28,7 +29,7 @@ export function RequisitionFormActions({
     onSubmit,
     (errors) => {
       console.error('❌ Form validation failed:', errors);
-      alert('Please fill in all required fields before submitting.');
+      toast.error('Please fill in all required fields before submitting.');
     }
   );
 
@@ -36,7 +37,7 @@ export function RequisitionFormActions({
     onForward,
     (errors) => {
       console.error('❌ Form validation failed:', errors);
-      alert('Please fill in all required fields before forwarding.');
+      toast.error('Please fill in all required fields before forwarding.');
     }
   );
 

@@ -46,21 +46,29 @@ export interface GeneralExpenseLineItemResponse {
   program: number;
   program_name?: string;
   expense_category: number;
+  expense_category_name?: string;
   expense_code_assignment: number;
   expense_code?: number | {
     id: number;
     code: string;
     description: string;
   };
+  expense_code_details?: {
+    id: number;
+    code: string;
+    description: string;
+  };
+  expense_path?: string;
   budget_line_item: number | null;
+  budget_line_item_details?: string | null;
   description: string;
   amount: string;
   gst_rate: string;
   gst_amount: string;
   total_amount: string;
   line_order: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface TravelExpenseLineItemResponse {
@@ -69,13 +77,21 @@ export interface TravelExpenseLineItemResponse {
   program: number;
   program_name?: string;
   expense_category: number;
+  expense_category_name?: string;
   expense_code_assignment: number;
   expense_code?: number | {
     id: number;
     code: string;
     description: string;
   };
+  expense_code_details?: {
+    id: number;
+    code: string;
+    description: string;
+  };
+  expense_path?: string;
   budget_line_item: number | null;
+  budget_line_item_details?: string | null;
   travel_date: string;
   start_address: string;
   end_address: string;
@@ -87,8 +103,8 @@ export interface TravelExpenseLineItemResponse {
   gst_amount: string;
   total_amount: string;
   line_order: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PerDiemExpenseLineItemResponse {
@@ -96,13 +112,22 @@ export interface PerDiemExpenseLineItemResponse {
   requisition: number;
   program: number;
   program_name?: string;
+  expense_category: number;
+  expense_category_name?: string;
   expense_code_assignment: number;
   expense_code?: number | {
     id: number;
     code: string;
     description: string;
   };
+  expense_code_details?: {
+    id: number;
+    code: string;
+    description: string;
+  };
+  expense_path?: string;
   budget_line_item: number | null;
+  budget_line_item_details?: string | null;
   meal_date: string;
   meal_type: 'breakfast' | 'lunch' | 'dinner' | 'full_day';
   description: string;
@@ -352,4 +377,50 @@ export interface CardHolder {
   name: string;
   display_name: string;
   card_type: string;
+}
+
+// ============================================================================
+// Approval Workspace Types
+// ============================================================================
+
+export interface BudgetLineItemDetail {
+  id: number;
+  label: string;
+  program_id: number;
+  program_name: string;
+  funder_name?: string;
+  budget_name?: string;
+  category_id: number | null;
+  category_name: string | null;
+  expense_code_id: number | null;
+  expense_code: string | null;
+  expense_code_assignment_id: number;
+  allocated_amount: string;
+  spent_amount: string;
+  remaining_amount: string;
+  is_sufficient: boolean;
+}
+
+export interface ApprovalWorkspaceResponse {
+  requisition: RequisitionResponse;
+  status_history: RequisitionStatusResponse[];
+  general_items: GeneralExpenseLineItemResponse[];
+  travel_items: TravelExpenseLineItemResponse[];
+  per_diem_items: PerDiemExpenseLineItemResponse[];
+  available_budget_lines: BudgetLineItemDetail[];
+  allowed_actions: string[];
+}
+
+export interface ExpenseItemBudgetAssignment {
+  id: number;
+  expense_category: number;
+  expense_code: number;
+  budget_line_item: number;
+}
+
+export interface ApproveWithBudgetRequest {
+  comments?: string;
+  general_items: ExpenseItemBudgetAssignment[];
+  travel_items: ExpenseItemBudgetAssignment[];
+  per_diem_items: ExpenseItemBudgetAssignment[];
 }

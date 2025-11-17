@@ -1,6 +1,7 @@
 import { useForm, useWatch, type FieldPath } from 'react-hook-form';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { RequisitionFormData } from '../model/types';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { getDefaultProgram } from '../utils/programUtils';
@@ -93,8 +94,6 @@ export function useRequisitionForm({
   useEffect(() => {
     if (initialData) {
       methods.reset(initialData);
-          
-
     }
   }, [initialData, methods]);
 
@@ -242,10 +241,9 @@ export function useRequisitionForm({
     }
 
     const isValid = await methods.trigger(fieldsToValidate);
-    
 
     if (!isValid) {
-      alert('Please fix all validation errors before continuing');
+      toast.error('Please fix all validation errors before continuing');
       return { ok: false };
     }
 
@@ -259,14 +257,14 @@ export function useRequisitionForm({
     ]);
 
     if (validationError) {
-      alert(validationError);
+      toast.error(validationError);
       return { ok: false };
     }
 
     // 3) Check minimum amount ($20)
     const formData = methods.getValues();
     if (formData.totalWithTax < 20) {
-      alert(
+      toast.error(
         `Requisition total must be at least $20.00. Current total: $${formData.totalWithTax.toFixed(
           2,
         )}`,
@@ -335,7 +333,7 @@ export function useRequisitionForm({
         error.response?.data?.message ||
         error.message ||
         (mode === 'edit' ? 'Failed to update requisition' : 'Failed to save draft');
-      alert(`Error: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 
@@ -400,7 +398,7 @@ export function useRequisitionForm({
       });
 
       // Success! Navigate to requisitions list
-      alert('Requisition submitted successfully!');
+      toast.success('Requisition submitted successfully!');
       if (onSuccess) {
         onSuccess();
       } else {
@@ -413,7 +411,7 @@ export function useRequisitionForm({
         error.response?.data?.message ||
         error.message ||
         'Failed to submit requisition';
-      alert(`Error: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 
@@ -481,7 +479,7 @@ export function useRequisitionForm({
 
       // Success! Show who it was forwarded to
       const assigneeName = forwardedRequisition.current_assignee_name || 'your supervisor';
-      alert(`Requisition forwarded successfully to ${assigneeName} for submission!`);
+      toast.success(`Requisition forwarded successfully to ${assigneeName} for submission!`);
 
       if (onSuccess) {
         onSuccess();
@@ -495,7 +493,7 @@ export function useRequisitionForm({
         error.response?.data?.message ||
         error.message ||
         'Failed to forward requisition';
-      alert(`Error: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 

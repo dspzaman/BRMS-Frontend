@@ -50,7 +50,7 @@ export function GeneralExpenseCard({ expense, index }: GeneralExpenseCardProps) 
       
       {/* Budget Line */}
       <td className="px-4 py-3 text-sm text-gray-700">
-        {expense.budget_line_item ? `Budget ${expense.budget_line_item}` : '-'}
+        {expense.budget_line_item_details || '-'}
       </td>
     </tr>
   );

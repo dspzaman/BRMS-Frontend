@@ -12,6 +12,8 @@ import type {
   ReturnRequisitionRequest,
   UploadDocumentRequest,
   SupportingDocumentResponse,
+  ApprovalWorkspaceResponse,
+  ApproveWithBudgetRequest,
 } from './types';
 
 // Base URL for requisition endpoints
@@ -192,12 +194,12 @@ export const getMyDrafts = async (): Promise<RequisitionResponse[]> => {
 export const submitRequisition = async (
   id: number,
   data?: SubmitRequisitionRequest
-): Promise<RequisitionResponse> => {
-  const response = await apiClient.post<RequisitionResponse>(
+): Promise<{ message: string; requisition: RequisitionResponse }> => {
+  const response = await apiClient.post<{ message: string; requisition: RequisitionResponse }>(
     `${BASE_URL}/requisitions/${id}/submit/`,
     data
   );
-  return response.data.requisition;
+  return response.data;
 };
 
 /**
@@ -476,6 +478,70 @@ export const getTeamRequisitions = async (params?: {
 };
 
 // ============================================================================
+// Approval Workspace
+// ============================================================================
+
+/**
+ * Get approval workspace data for a requisition
+ * Includes requisition details, expense items, available budget lines, and allowed actions
+ */
+export const getApprovalWorkspace = async (
+  id: number
+): Promise<ApprovalWorkspaceResponse> => {
+  const response = await apiClient.get<ApprovalWorkspaceResponse>(
+    `${BASE_URL}/requisitions/${id}/approval-workspace/`
+  );
+  return response.data;
+};
+
+/**
+ * Approve requisition with budget assignments
+ * Assigns budget lines to expense items and approves in a single transaction
+ */
+export const approveWithBudget = async (
+  id: number,
+  data: ApproveWithBudgetRequest
+): Promise<RequisitionResponse> => {
+  const response = await apiClient.post<RequisitionResponse>(
+    `${BASE_URL}/requisitions/${id}/approval/approve/`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * Update budget assignment for a travel expense line item
+ * This updates the budget immediately (not waiting for final approval)
+ */
+export const updateTravelBudgetAssignment = async (
+  requisitionId: number,
+  itemId: number,
+  data: { budget_line_item: number; expense_category?: number }
+): Promise<{ success: boolean; message: string; item_id: number; budget_line_item: number }> => {
+  const response = await apiClient.patch(
+    `${BASE_URL}/requisitions/${requisitionId}/travel-items/${itemId}/assign-budget/`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * Update budget assignment for a per diem expense line item
+ * This updates the budget immediately (not waiting for final approval)
+ */
+export const updatePerDiemBudgetAssignment = async (
+  requisitionId: number,
+  itemId: number,
+  data: { budget_line_item: number; expense_category?: number }
+): Promise<{ success: boolean; message: string; item_id: number; budget_line_item: number }> => {
+  const response = await apiClient.patch(
+    `${BASE_URL}/requisitions/${requisitionId}/per-diem-items/${itemId}/assign-budget/`,
+    data
+  );
+  return response.data;
+};
+
+// ============================================================================
 // Export all
 // ============================================================================
 
@@ -514,4 +580,10 @@ export default {
   // Validation
   checkSubmissionAuthority,
   getSuggestedApprover,
+  
+  // Approval Workspace
+  getApprovalWorkspace,
+  approveWithBudget,
+  updateTravelBudgetAssignment,
+  updatePerDiemBudgetAssignment,
 };

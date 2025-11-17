@@ -1,5 +1,6 @@
 // src/app/App.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import { useAuth } from "@/shared/contexts/AuthContext";
 
 // Pages
@@ -13,14 +14,14 @@ import MyRequisitionsPage from "@/pages/Requisitions/MyRequisitionsPage";
 import AssignedRequisitionsPage from "@/pages/Requisitions/AssignedRequisitionsPage";
 import EditRequisitionPage from "@/pages/Requisitions/EditRequisitionPage";
 import ViewRequisitionPage from "@/pages/Requisitions/ViewRequisitionPage";
-import ViewReports from "@/pages/Reports/viewReports";
+import ViewReports from "@/pages/Reports/ViewReports";
 import ApproveRequisitionPage from "@/pages/Requisitions/ApproveRequisitionPage";
 
 
 /**
  * Protects routes that require authentication.
  */
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated, isInitializing } = useAuth();
 
   if (isInitializing) {
@@ -41,7 +42,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 /**
  * Public Routes
  */
-function PublicRoute({ children }: { children: JSX.Element }) {
+function PublicRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated, isInitializing } = useAuth();
 
   if (isInitializing) {
@@ -60,7 +61,7 @@ function PublicRoute({ children }: { children: JSX.Element }) {
   return children;
 }
 
-function ApproverRoute({ children }: { children: JSX.Element }) {
+function ApproverRoute({ children }: { children: React.ReactElement }) {
   const { user, isInitializing } = useAuth();
 
   if (isInitializing) {
@@ -84,7 +85,31 @@ function ApproverRoute({ children }: { children: JSX.Element }) {
  */
 export default function App() {
   return (
-    <Routes>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#374151',
+            border: '1px solid #e5e7eb',
+          },
+          success: {
+            iconTheme: {
+              primary: '#116B28',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+      <Routes>
       {/* Public routes */}
       <Route
         path="/login"
@@ -202,6 +227,7 @@ export default function App() {
 
       {/* Default redirect */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 import { useChangePassword } from "../model/hooks";
 
 export default function ChangePassword() {
@@ -9,28 +10,23 @@ export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null); // NEW: Separate API error state
-  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setValidationError(null);
-    setApiError(null); // NEW: Clear API error
 
     // Validation
     if (newPassword !== confirmPassword) {
-      setValidationError("New passwords do not match");
+      toast.error("New passwords do not match");
       return;
     }
 
     if (newPassword.length < 8) {
-      setValidationError("Password must be at least 8 characters long");
+      toast.error("Password must be at least 8 characters long");
       return;
     }
 
     if (currentPassword === newPassword) {
-      setValidationError("New password must be different from current password");
+      toast.error("New password must be different from current password");
       return;
     }
 
@@ -42,20 +38,15 @@ export default function ChangePassword() {
       },
       {
         onSuccess: () => {
-          setSuccess(true);
-          setApiError(null); // Clear any previous errors
+          toast.success('Password changed successfully! You can now use your new password for future logins.');
           // Clear form
           setCurrentPassword("");
           setNewPassword("");
           setConfirmPassword("");
-          
-          // Scroll to top to see success message
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         onError: (error: any) => {
           // Extract error message from various possible locations
           let errorMessage = "Failed to change password";
-          
           
           if (error?.response?.data?.error) {
             errorMessage = error.response.data.error;
@@ -65,17 +56,11 @@ export default function ChangePassword() {
             errorMessage = error.message;
           }
           
-          console.log('Extracted error message:', errorMessage); // Debug log
-          
-          setApiError(errorMessage); // NEW: Set API error state
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          toast.error(errorMessage);
         }
       }
     );
   }
-
-  // Combine validation error and API error
-  const error = validationError || apiError;
 
   return (
     <main className="flex-1 bg-white">
@@ -87,89 +72,6 @@ export default function ChangePassword() {
             Update your password to keep your account secure
           </p>
         </div>
-
-        {/* Success Message */}
-        {success && (
-          <div className="max-w-2xl mb-6">
-            <div className="rounded-md bg-green-50 border border-green-200 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">
-                    Password Changed Successfully!
-                  </h3>
-                  <div className="mt-2 text-sm text-green-700">
-                    <p>Your password has been updated. You can now use your new password for future logins.</p>
-                  </div>
-                  <div className="mt-4">
-                    <button
-                      type="button"
-                      onClick={() => navigate("/dashboard")}
-                      className="text-sm font-medium text-green-800 hover:text-green-700 underline"
-                    >
-                      Go to Dashboard →
-                    </button>
-                  </div>
-                </div>
-                <div className="ml-auto pl-3">
-                  <button
-                    type="button"
-                    onClick={() => setSuccess(false)}
-                    className="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
-                  >
-                    <span className="sr-only">Dismiss</span>
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="max-w-2xl mb-6">
-            <div className="rounded-md bg-red-50 border border-red-200 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3 flex-1">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Password Change Failed
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                  </div>
-                </div>
-                <div className="ml-auto pl-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setValidationError(null);
-                      setApiError(null);
-                      changePasswordMutation.reset();
-                    }}
-                    className="inline-flex rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
-                  >
-                    <span className="sr-only">Dismiss</span>
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Change Password Form */}
         <div className="max-w-2xl">
