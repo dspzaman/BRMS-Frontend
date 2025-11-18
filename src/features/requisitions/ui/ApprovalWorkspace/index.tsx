@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { showApprovalConfirmation, showReturnConfirmation } from '@/shared/utils/toastHelpers';
 import { useApprovalWorkspace, useReturnForRevision, useApproveWithBudget } from '../../api/useApprovalWorkspace';
 import type { ExpenseItemBudgetAssignment } from '../../api/types';
 import GeneralExpensesSection from './GeneralExpensesSection';
 import TravelExpensesSection from './TravelExpensesSection';
 import PerDiemExpensesSection from './PerDiemExpensesSection';
 import { SupportingDocumentsDisplay } from '../RequisitionDetails/sections/SupportingDocumentsDisplay';
-import BudgetSummaryModal from './BudgetSummaryModal';
+import BudgetSummaryDrawer from './BudgetSummaryDrawer';
 
 interface ApprovalWorkspaceProps {
   requisitionId: number;
@@ -265,62 +266,14 @@ export default function ApprovalWorkspace({ requisitionId }: ApprovalWorkspacePr
                 return;
               }
 
-              toast.promise(
-                new Promise((resolve, reject) => {
-                  toast(
-                    (t) => (
-                      <div className="flex flex-col gap-3">
-                        <div>
-                          <p className="font-medium text-gray-900">Return for Revision?</p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Are you sure you want to return this requisition for revision?
-                          </p>
-                        </div>
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => {
-                              toast.dismiss(t.id);
-                              reject(new Error('Cancelled'));
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={async () => {
-                              toast.dismiss(t.id);
-                              try {
-                                await returnMutation.mutateAsync({
-                                  id: requisitionId,
-                                  data: { comments: comments.trim() },
-                                });
-                                resolve(true);
-                              } catch (error) {
-                                reject(error);
-                              }
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-700"
-                          >
-                            Return for Revision
-                          </button>
-                        </div>
-                      </div>
-                    ),
-                    {
-                      duration: Infinity,
-                      position: 'top-center',
-                    }
-                  );
-                }),
-                {
-                  loading: 'Processing...',
-                  success: null, // Success handled by mutation hook
-                  error: (err) => {
-                    if (err.message === 'Cancelled') return null;
-                    return null; // Error handled by mutation hook
-                  },
-                }
-              );
+              showReturnConfirmation({
+                onConfirm: async () => {
+                  await returnMutation.mutateAsync({
+                    id: requisitionId,
+                    data: { comments: comments.trim() },
+                  });
+                },
+              });
             }}
             disabled={returnMutation.isPending || !comments.trim()}
             className="px-6 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
@@ -346,85 +299,37 @@ export default function ApprovalWorkspace({ requisitionId }: ApprovalWorkspacePr
                 return;
               }
 
-              toast.promise(
-                new Promise((resolve, reject) => {
-                  toast(
-                    (t) => (
-                      <div className="flex flex-col gap-3">
-                        <div>
-                          <p className="font-medium text-gray-900">Approve Requisition?</p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Are you sure you want to approve this requisition? This will assign all budgets and move it to Account Confirmation.
-                          </p>
-                        </div>
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => {
-                              toast.dismiss(t.id);
-                              reject(new Error('Cancelled'));
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={async () => {
-                              toast.dismiss(t.id);
-                              try {
-                                // Format budget assignments for API
-                                const payload = {
-                                  comments: comments.trim() || undefined,
-                                  general_items: budgetAssignments.general.map(item => ({
-                                    id: item.id,
-                                    expense_category: item.expense_category,
-                                    expense_code: item.expense_code,
-                                    budget_line_item: item.budget_line_item,
-                                  })),
-                                  travel_items: budgetAssignments.travel.map(item => ({
-                                    id: item.id,
-                                    expense_category: item.expense_category,
-                                    expense_code: item.expense_code,
-                                    budget_line_item: item.budget_line_item,
-                                  })),
-                                  per_diem_items: budgetAssignments.perDiem.map(item => ({
-                                    id: item.id,
-                                    expense_category: item.expense_category,
-                                    expense_code: item.expense_code,
-                                    budget_line_item: item.budget_line_item,
-                                  })),
-                                };
+              showApprovalConfirmation({
+                onConfirm: async () => {
+                  // Format budget assignments for API
+                  const payload = {
+                    comments: comments.trim() || undefined,
+                    general_items: budgetAssignments.general.map(item => ({
+                      id: item.id,
+                      expense_category: item.expense_category,
+                      expense_code: item.expense_code,
+                      budget_line_item: item.budget_line_item,
+                    })),
+                    travel_items: budgetAssignments.travel.map(item => ({
+                      id: item.id,
+                      expense_category: item.expense_category,
+                      expense_code: item.expense_code,
+                      budget_line_item: item.budget_line_item,
+                    })),
+                    per_diem_items: budgetAssignments.perDiem.map(item => ({
+                      id: item.id,
+                      expense_category: item.expense_category,
+                      expense_code: item.expense_code,
+                      budget_line_item: item.budget_line_item,
+                    })),
+                  };
 
-                                await approveMutation.mutateAsync({
-                                  id: requisitionId,
-                                  data: payload,
-                                });
-                                resolve(true);
-                              } catch (error) {
-                                reject(error);
-                              }
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium text-white bg-ems-green-600 rounded-md hover:bg-ems-green-700"
-                          >
-                            Approve
-                          </button>
-                        </div>
-                      </div>
-                    ),
-                    {
-                      duration: Infinity,
-                      position: 'top-center',
-                    }
-                  );
-                }),
-                {
-                  loading: 'Approving...',
-                  success: null, // Success handled by mutation hook
-                  error: (err) => {
-                    if (err.message === 'Cancelled') return null;
-                    return null; // Error handled by mutation hook
-                  },
-                }
-              );
+                  await approveMutation.mutateAsync({
+                    id: requisitionId,
+                    data: payload,
+                  });
+                },
+              });
             }}
             disabled={!allItemsAssigned || approveMutation.isPending}
             className={
@@ -511,8 +416,8 @@ export default function ApprovalWorkspace({ requisitionId }: ApprovalWorkspacePr
         )}
       </div>
 
-      {/* Budget Summary Modal */}
-      <BudgetSummaryModal
+      {/* Budget Summary Drawer */}
+      <BudgetSummaryDrawer
         isOpen={showBudgetModal}
         onClose={() => setShowBudgetModal(false)}
       />

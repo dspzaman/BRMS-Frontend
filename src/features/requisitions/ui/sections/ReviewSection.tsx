@@ -1,6 +1,7 @@
 // src/features/requisitions/ui/ReviewSection.tsx
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { showReviewConfirmation, showReturnConfirmation } from '@/shared/utils/toastHelpers';
 import { useReviewAndForward, useReturnForRevision } from '../../api/useRequisitions';
 import type { RequisitionResponse } from '../../api/types';
 
@@ -20,68 +21,17 @@ export function ReviewSection({ requisition, onSuccess }: ReviewSectionProps) {
       return;
     }
 
-    // Use toast.promise for better UX with loading/success/error states
-    toast.promise(
-      new Promise((resolve, reject) => {
-        // Show custom confirmation toast
-        toast(
-          (t) => (
-            <div className="flex flex-col gap-3">
-              <div>
-                <p className="font-medium text-gray-900">Review & Forward Requisition?</p>
-                <p className="text-sm text-gray-600 mt-1">
-                  Are you sure you want to review and forward this requisition to the next approver?
-                </p>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => {
-                    toast.dismiss(t.id);
-                    reject(new Error('Cancelled'));
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    toast.dismiss(t.id);
-                    try {
-                      await reviewMutation.mutateAsync({
-                        id: requisition.id,
-                        comments: comments.trim(),
-                      });
-                      resolve(true);
-                      if (onSuccess) {
-                        onSuccess();
-                      }
-                    } catch (error) {
-                      reject(error);
-                    }
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-white bg-ems-green-600 rounded-md hover:bg-ems-green-700"
-                >
-                  Review & Forward
-                </button>
-              </div>
-            </div>
-          ),
-          {
-            duration: Infinity,
-            position: 'top-center',
-          }
-        );
-      }),
-      {
-        loading: 'Processing...',
-        success: 'Requisition reviewed and forwarded successfully!',
-        error: (err) => {
-          if (err.message === 'Cancelled') return null;
-          const errorMessage = err.response?.data?.error || err.message || 'Failed to review requisition';
-          return errorMessage;
-        },
-      }
-    );
+    showReviewConfirmation({
+      onConfirm: async () => {
+        await reviewMutation.mutateAsync({
+          id: requisition.id,
+          comments: comments.trim(),
+        });
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+    });
   };
 
   const handleReturnForRevision = async () => {
@@ -90,68 +40,17 @@ export function ReviewSection({ requisition, onSuccess }: ReviewSectionProps) {
       return;
     }
 
-    // Use toast.promise for better UX with loading/success/error states
-    toast.promise(
-      new Promise((resolve, reject) => {
-        // Show custom confirmation toast
-        toast(
-          (t) => (
-            <div className="flex flex-col gap-3">
-              <div>
-                <p className="font-medium text-gray-900">Return for Revision?</p>
-                <p className="text-sm text-gray-600 mt-1">
-                  Are you sure you want to return this requisition for revision?
-                </p>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => {
-                    toast.dismiss(t.id);
-                    reject(new Error('Cancelled'));
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    toast.dismiss(t.id);
-                    try {
-                      await returnMutation.mutateAsync({
-                        id: requisition.id,
-                        comments: comments.trim(),
-                      });
-                      resolve(true);
-                      if (onSuccess) {
-                        onSuccess();
-                      }
-                    } catch (error) {
-                      reject(error);
-                    }
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-700"
-                >
-                  Return for Revision
-                </button>
-              </div>
-            </div>
-          ),
-          {
-            duration: Infinity,
-            position: 'top-center',
-          }
-        );
-      }),
-      {
-        loading: 'Processing...',
-        success: 'Requisition returned for revision successfully!',
-        error: (err) => {
-          if (err.message === 'Cancelled') return null;
-          const errorMessage = err.response?.data?.error || err.message || 'Failed to return requisition';
-          return errorMessage;
-        },
-      }
-    );
+    showReturnConfirmation({
+      onConfirm: async () => {
+        await returnMutation.mutateAsync({
+          id: requisition.id,
+          comments: comments.trim(),
+        });
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+    });
   };
 
   return (

@@ -245,6 +245,13 @@ export function AssignedRequisitions({
                       <div className="flex justify-end">
                         <StatusBadge requisition={requisition} />
                       </div>
+                    ) : requisition.current_status === 'account_confirmation' ? (
+                      <Link
+                        to={`/requisitions/view/${requisition.id}`}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-ems-green-600 hover:bg-ems-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-green-500"
+                      >
+                        Confirm
+                      </Link>
                     ) : (
                       <RequisitionActionButtons requisition={requisition} />
                     )}

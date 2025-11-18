@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { apiClient } from '@/shared/api/client';
 
-interface BudgetSummaryModalProps {
+interface BudgetSummaryDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -49,7 +49,7 @@ interface ProgramBudgetData {
   budgets: BudgetSummary[];
 }
 
-export default function BudgetSummaryModal({ isOpen, onClose }: BudgetSummaryModalProps) {
+export default function BudgetSummaryDrawer({ isOpen, onClose }: BudgetSummaryDrawerProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [programBudgets, setProgramBudgets] = useState<ProgramBudgetData[]>([]);
@@ -185,7 +185,7 @@ export default function BudgetSummaryModal({ isOpen, onClose }: BudgetSummaryMod
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {loading ? (
+          {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ems-green-600 mx-auto"></div>
@@ -200,9 +200,9 @@ export default function BudgetSummaryModal({ isOpen, onClose }: BudgetSummaryMod
                 <p className="text-gray-600">No active budgets found for your programs</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {programBudgets.map((programData) => (
-                  <div key={programData.program_id} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="space-y-6">
+              {programBudgets.map((programData) => (
+                <div key={programData.program_id} className="border border-gray-200 rounded-lg overflow-hidden">
                     {/* Program Header */}
                     <div className="bg-ems-green-50 px-4 py-3 border-b border-ems-green-200">
                       <h3 className="text-lg font-semibold text-ems-green-700">
@@ -215,7 +215,7 @@ export default function BudgetSummaryModal({ isOpen, onClose }: BudgetSummaryMod
 
                     {/* Budgets */}
                     <div className="divide-y divide-gray-300">
-                      {programData.budgets.map((budget) => {
+                    {programData.budgets.map((budget) => {
                         const budgetKey = `${programData.program_id}-${budget.id}`;
                         return (
                           <div key={budgetKey} className="bg-white border-l-4 border-ems-green-600">
@@ -226,7 +226,7 @@ export default function BudgetSummaryModal({ isOpen, onClose }: BudgetSummaryMod
                             >
                               <div className="flex-1 text-left">
                                 <div className="flex items-center gap-3">
-                                  <svg className="h-5 w-5 text-ems-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-5 w-5 text-ems-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                   </svg>
                                   <h4 className="font-semibold text-ems-green-900 text-base">

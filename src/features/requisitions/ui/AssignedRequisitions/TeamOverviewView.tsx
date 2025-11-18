@@ -61,14 +61,13 @@ const TeamOverviewView = () => {
             >
               <option value="all">All Statuses</option>
               <option value="forwarded_for_submission">Forwarded For Submission</option>
-              <option value="pending_review">Review</option>
+              <option value="pending_review">Pending Review</option>
+              <option value="pending_approval">Pending Approval</option>
               <option value="returned_for_revision">Returned for Revision</option>
-              <option value="pending_approval">Approval</option>
               <option value="account_confirmation">Account Confirmation</option>
-              <option value="ed_approval">ED Approval</option>
-              <option value="board_approval">Board Approval</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="signaturee_confirmation">Signaturee Confirmation</option>
+              <option value="payment_confirmation">Payment Confirmation</option>
+              
             </select>
           </div>
 

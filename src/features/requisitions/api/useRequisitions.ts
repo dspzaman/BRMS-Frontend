@@ -301,3 +301,51 @@ export function useTeamRequisitions(filters?: {
     staleTime: 30 * 1000, // 30 seconds
   });
 }
+
+/**
+ * Hook to fetch users with signaturee authority
+ */
+export function useSignaturees() {
+  return useQuery<Array<{ id: number; first_name: string; last_name: string; email: string }>>({
+    queryKey: ['signaturees'],
+    queryFn: async () => {
+      const { apiClient } = await import('@/shared/api/client');
+      const response = await apiClient.get('/api/accounts/users/signaturees/');
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+}
+
+/**
+ * Hook to confirm account with payment details and signaturees
+ */
+export function useConfirmAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      requisitionId,
+      data,
+    }: {
+      requisitionId: number;
+      data: {
+        payment_type: string;
+        payment_reference_number: string;
+        signaturee_1: number;
+        signaturee_2: number;
+        comments?: string;
+      };
+    }) => {
+      const { apiClient } = await import('@/shared/api/client');
+      const response = await apiClient.post(
+        `/api/requisition-management/requisitions/${requisitionId}/account-confirmation/`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    },
+  });
+}

@@ -7,6 +7,7 @@ import { RequisitionDetails } from '@/features/requisitions/ui/RequisitionDetail
 import { useRequisition } from '@/features/requisitions/api/useRequisitions';
 import { StatusBadge } from '@/features/requisitions/ui/MyRequisitions/StatusBadge';
 import { ReviewSection } from '@/features/requisitions/ui/sections/ReviewSection';
+import { AccountConfirmationSection } from '@/features/requisitions/ui/sections/AccountConfirmationSection';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
 export default function ViewRequisitionPage() {
@@ -222,6 +223,18 @@ export default function ViewRequisitionPage() {
              requisition.current_status === 'pending_review' && (
               <div className="mb-6">
                 <ReviewSection 
+                  requisition={requisition} 
+                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                />
+              </div>
+            )}
+
+            {/* Account Confirmation Section - Show if user is assignee and status is account_confirmation */}
+            {user && 
+             requisition.current_assignee === user.id && 
+             requisition.current_status === 'account_confirmation' && (
+              <div className="mb-6">
+                <AccountConfirmationSection 
                   requisition={requisition} 
                   onSuccess={() => navigate('/requisitions/my-requisitions')}
                 />

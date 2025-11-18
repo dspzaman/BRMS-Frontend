@@ -1,7 +1,7 @@
 // src/features/requisitions/ui/MyRequisitions/index.tsx
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { showDeleteConfirmation } from '@/shared/utils/toastHelpers';
 import { useMyRequisitions, useDeleteRequisition } from '../../api/useRequisitions';
 import type { RequisitionResponse } from '../../api/types';
 import { RequisitionsTable } from './RequisitionsTable';
@@ -91,58 +91,12 @@ export function MyRequisitionsView() {
   ].filter(tab => tab.key === 'all' || tab.count > 0);
 
   const handleDelete = async (id: number, requisitionNumber: string) => {
-    // Use toast.promise for better UX with loading/success/error states
-    toast.promise(
-      new Promise((resolve, reject) => {
-        // Show custom confirmation toast
-        toast(
-          (t) => (
-            <div className="flex flex-col gap-3">
-              <div>
-                <p className="font-medium text-gray-900">Delete Requisition?</p>
-                <p className="text-sm text-gray-600 mt-1">
-                  Are you sure you want to delete requisition {requisitionNumber}?
-                </p>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => {
-                    toast.dismiss(t.id);
-                    reject(new Error('Cancelled'));
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    toast.dismiss(t.id);
-                    try {
-                      await deleteMutation.mutateAsync(id);
-                      resolve(true);
-                    } catch (error) {
-                      reject(error);
-                    }
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ),
-          {
-            duration: Infinity,
-            position: 'top-center',
-          }
-        );
-      }),
-      {
-        loading: 'Deleting requisition...',
-        success: 'Requisition deleted successfully!',
-        error: (err) => err.message === 'Cancelled' ? null : 'Failed to delete requisition',
-      }
-    );
+    showDeleteConfirmation({
+      itemName: `Requisition ${requisitionNumber}`,
+      onConfirm: async () => {
+        await deleteMutation.mutateAsync(id);
+      },
+    });
   };
 
   return (
