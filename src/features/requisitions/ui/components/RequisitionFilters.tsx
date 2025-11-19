@@ -17,6 +17,7 @@ export function RequisitionFilters({ filters, onChange }: RequisitionFiltersProp
     { value: 'pending_review', label: 'Pending Review' },
     { value: 'pending_approval', label: 'Pending Approval' },
     { value: 'returned_for_revision', label: 'Returned for Revision' },
+    { value: 'completed', label: 'Approved' },
     { value: 'account_confirmation', label: 'Account Confirmation' },
     { value: 'signaturee_confirmation', label: 'Signaturee Confirmation' },
     { value: 'payment_confirmation', label: 'Payment Confirmation' },

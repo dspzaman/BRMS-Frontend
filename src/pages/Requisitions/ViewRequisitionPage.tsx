@@ -10,6 +10,7 @@ import { ReviewSection } from '@/features/requisitions/ui/sections/ReviewSection
 import { AccountConfirmationSection } from '@/features/requisitions/ui/sections/AccountConfirmationSection';
 import { SignatureeConfirmationSection } from '@/features/requisitions/ui/sections/SignatureeConfirmationSection';
 import { PaymentConfirmationSection } from '@/features/requisitions/ui/sections/PaymentConfirmationSection';
+import { RecallButton } from '@/features/requisitions/ui/components/RecallButton';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
 export default function ViewRequisitionPage() {
@@ -164,6 +165,40 @@ export default function ViewRequisitionPage() {
                       Edit
                     </button>
                   )}
+                  
+                  {/* Recall button - Show if user completed previous step and current assignee hasn't acted */}
+                  {user && requisition.status_history && (
+                    (() => {
+                      // Find if user has any completed status in history (approved, confirmed, completed, etc.)
+                      const userCompletedStatuses = requisition.status_history.filter(
+                        s => s.completed_by === user.id && 
+                             s.completed_date && 
+                             !s.is_current
+                      );
+                      
+                      // Get current status
+                      const currentStatus = requisition.status_history.find(s => s.is_current);
+                      
+                      // Can recall if:
+                      // 1. User has completed at least one status
+                      // 2. Current status exists and is still pending
+                      // 3. User is NOT the current assignee
+                      // 4. Requisition is not in terminal state
+                      const canRecall = userCompletedStatuses.length > 0 && 
+                                       currentStatus && 
+                                       currentStatus.action_status === 'pending' && 
+                                       requisition.current_assignee !== user.id &&
+                                       !['completed', 'cancelled', 'rejected'].includes(requisition.current_status);
+                      
+                      return canRecall ? (
+                        <RecallButton 
+                          requisition={requisition} 
+                          onSuccess={() => window.location.reload()}
+                        />
+                      ) : null;
+                    })()
+                  )}
+                  
                   <button
                     onClick={() => navigate('/requisitions/my-requisitions')}
                     className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2"
@@ -226,7 +261,7 @@ export default function ViewRequisitionPage() {
               <div className="mb-6">
                 <ReviewSection 
                   requisition={requisition} 
-                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                  onSuccess={() => navigate('/requisitions/assigned')}
                 />
               </div>
             )}
@@ -238,7 +273,7 @@ export default function ViewRequisitionPage() {
               <div className="mb-6">
                 <AccountConfirmationSection 
                   requisition={requisition} 
-                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                  onSuccess={() => navigate('/requisitions/assigned')}
                 />
               </div>
             )}
@@ -250,7 +285,7 @@ export default function ViewRequisitionPage() {
               <div className="mb-6">
                 <SignatureeConfirmationSection 
                   requisition={requisition} 
-                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                  onSuccess={() => navigate('/requisitions/assigned')}
                 />
               </div>
             )}
@@ -262,7 +297,7 @@ export default function ViewRequisitionPage() {
               <div className="mb-6">
                 <PaymentConfirmationSection 
                   requisition={requisition} 
-                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                  onSuccess={() => navigate('/requisitions/assigned')}
                 />
               </div>
             )}

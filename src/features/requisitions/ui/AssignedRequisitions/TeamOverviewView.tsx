@@ -11,7 +11,9 @@ const TeamOverviewView = () => {
   const [filters, setFilters] = useState({
     status: 'all',
     program: 'all',
-    search: ''
+    search: '',
+    from_date: '',
+    to_date: ''
   });
 
   const { data, isLoading, error } = useTeamRequisitions(filters);
@@ -48,7 +50,7 @@ const TeamOverviewView = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -64,10 +66,10 @@ const TeamOverviewView = () => {
               <option value="pending_review">Pending Review</option>
               <option value="pending_approval">Pending Approval</option>
               <option value="returned_for_revision">Returned for Revision</option>
+              <option value="completed">Approved</option>
               <option value="account_confirmation">Account Confirmation</option>
               <option value="signaturee_confirmation">Signaturee Confirmation</option>
               <option value="payment_confirmation">Payment Confirmation</option>
-              
             </select>
           </div>
 
@@ -105,7 +107,45 @@ const TeamOverviewView = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
             />
           </div>
+
+          {/* From Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              From Date
+            </label>
+            <input
+              type="date"
+              value={filters.from_date}
+              onChange={(e) => setFilters({ ...filters, from_date: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+            />
+          </div>
+
+          {/* To Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              To Date
+            </label>
+            <input
+              type="date"
+              value={filters.to_date}
+              onChange={(e) => setFilters({ ...filters, to_date: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+            />
+          </div>
         </div>
+
+        {/* Clear Filters Button */}
+        {(filters.status !== 'all' || filters.program !== 'all' || filters.search || filters.from_date || filters.to_date) && (
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => setFilters({ status: 'all', program: 'all', search: '', from_date: '', to_date: '' })}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Results Summary */}
@@ -131,10 +171,7 @@ const TeamOverviewView = () => {
                     Requisition #
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Prepared By
+                    Submitted By
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
@@ -164,12 +201,9 @@ const TeamOverviewView = () => {
                         {requisition.requisition_number}
                       </button>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{requisition.title}</div>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {requisition.prepared_by_name || 'N/A'}
+                        {requisition.submitted_by_name || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

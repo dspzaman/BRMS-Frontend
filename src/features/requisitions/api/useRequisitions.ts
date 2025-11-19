@@ -288,12 +288,14 @@ export function useMyProcessedRequisitions() {
 
 /**
  * Hook to fetch team requisitions based on hierarchical access
- * @param filters - Optional filters for status, program, and search
+ * @param filters - Optional filters for status, program, search, and date range
  */
 export function useTeamRequisitions(filters?: {
   status?: string;
   program?: string;
   search?: string;
+  from_date?: string;
+  to_date?: string;
 }) {
   return useQuery({
     queryKey: ['requisitions', 'team', filters],
@@ -400,6 +402,33 @@ export function useConfirmPayment() {
       const response = await apiClient.post(
         `/api/requisition-management/requisitions/${requisitionId}/payment-confirmation/`,
         data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    },
+  });
+}
+
+/**
+ * Hook to recall a requisition (previous assignee takes it back)
+ */
+export function useRecallRequisition() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      requisitionId,
+      reason,
+    }: {
+      requisitionId: number;
+      reason: string;
+    }) => {
+      const { apiClient } = await import('@/shared/api/client');
+      const response = await apiClient.post(
+        `/api/requisition-management/requisitions/${requisitionId}/recall/`,
+        { reason }
       );
       return response.data;
     },

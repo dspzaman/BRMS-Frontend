@@ -203,7 +203,7 @@ export function AssignedRequisitions({
                   Requisition
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prepared By
+                  Submitted By
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
@@ -231,7 +231,7 @@ export function AssignedRequisitions({
                     </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {requisition.prepared_by_name || 'N/A'}
+                    {requisition.submitted_by_name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {formatCurrency(Number(requisition.total_with_tax || 0))}

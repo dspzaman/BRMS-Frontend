@@ -454,12 +454,14 @@ export const getMyProcessedRequisitions = async (): Promise<{
 
 /**
  * Get team requisitions based on hierarchical access
- * Supports filtering by status, program, and search query
+ * Supports filtering by status, program, search query, and date range
  */
 export const getTeamRequisitions = async (params?: {
   status?: string;
   program?: string;
   search?: string;
+  from_date?: string;
+  to_date?: string;
 }): Promise<{
   count: number;
   results: RequisitionResponse[];
@@ -472,6 +474,8 @@ export const getTeamRequisitions = async (params?: {
       status: params?.status || 'all',
       program: params?.program || 'all',
       search: params?.search || '',
+      from_date: params?.from_date || '',
+      to_date: params?.to_date || '',
     },
   });
   return response.data;
