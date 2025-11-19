@@ -166,6 +166,8 @@ export interface RequisitionResponse {
   gst_rate: string;
   gst_amount: string;
   total_with_tax: string;
+  payment_type: string | null;
+  payment_reference_number: string | null;
   
   // Workflow
   prepared_by: number;

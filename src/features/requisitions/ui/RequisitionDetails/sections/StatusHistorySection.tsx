@@ -100,7 +100,10 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
                 <div className="flex flex-col items-center">
                   
                   <div className={`w-3 h-3 rounded-full ${
-                    statusItem.action_status === 'completed' || statusItem.action_status === 'forwarded' || statusItem.action_status === 'approved'
+                    statusItem.action_status === 'completed' || 
+                    statusItem.action_status === 'forwarded' || 
+                    statusItem.action_status === 'approved' ||
+                    statusItem.action_status === 'confirmed'
                       ? 'bg-ems-green-600'
                       : 'bg-gray-400'
                   }`}></div>

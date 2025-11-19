@@ -8,6 +8,8 @@ import { useRequisition } from '@/features/requisitions/api/useRequisitions';
 import { StatusBadge } from '@/features/requisitions/ui/MyRequisitions/StatusBadge';
 import { ReviewSection } from '@/features/requisitions/ui/sections/ReviewSection';
 import { AccountConfirmationSection } from '@/features/requisitions/ui/sections/AccountConfirmationSection';
+import { SignatureeConfirmationSection } from '@/features/requisitions/ui/sections/SignatureeConfirmationSection';
+import { PaymentConfirmationSection } from '@/features/requisitions/ui/sections/PaymentConfirmationSection';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
 export default function ViewRequisitionPage() {
@@ -235,6 +237,30 @@ export default function ViewRequisitionPage() {
              requisition.current_status === 'account_confirmation' && (
               <div className="mb-6">
                 <AccountConfirmationSection 
+                  requisition={requisition} 
+                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                />
+              </div>
+            )}
+
+            {/* Signaturee Confirmation Section - Show if user is assignee and status is signaturee_confirmation */}
+            {user && 
+             requisition.current_assignee === user.id && 
+             requisition.current_status === 'signaturee_confirmation' && (
+              <div className="mb-6">
+                <SignatureeConfirmationSection 
+                  requisition={requisition} 
+                  onSuccess={() => navigate('/requisitions/my-requisitions')}
+                />
+              </div>
+            )}
+
+            {/* Payment Confirmation Section - Show if user is assignee and status is payment_confirmation */}
+            {user && 
+             requisition.current_assignee === user.id && 
+             requisition.current_status === 'payment_confirmation' && (
+              <div className="mb-6">
+                <PaymentConfirmationSection 
                   requisition={requisition} 
                   onSuccess={() => navigate('/requisitions/my-requisitions')}
                 />

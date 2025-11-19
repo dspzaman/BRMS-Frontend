@@ -5,6 +5,7 @@ import { RequisitionFilters } from '../components/RequisitionFilters';
 import { RequisitionActionButtons } from '../components/RequisitionActionButtons';
 import { StatusBadge } from '../MyRequisitions/StatusBadge';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import type { RequisitionResponse } from '../../api/types';
 
 interface AssignedRequisitionsProps {
@@ -20,6 +21,7 @@ export function AssignedRequisitions({
   error,
   isProcessedView = false 
 }: AssignedRequisitionsProps) {
+  const { user } = useAuth();
   const [filters, setFilters] = useState({
     status: 'all',
     search: '',
@@ -245,7 +247,10 @@ export function AssignedRequisitions({
                       <div className="flex justify-end">
                         <StatusBadge requisition={requisition} />
                       </div>
-                    ) : requisition.current_status === 'account_confirmation' ? (
+                    ) : (requisition.current_status === 'account_confirmation' || 
+                        requisition.current_status === 'signaturee_confirmation' ||
+                        requisition.current_status === 'payment_confirmation') &&
+                       user && requisition.current_assignee === user.id ? (
                       <Link
                         to={`/requisitions/view/${requisition.id}`}
                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-ems-green-600 hover:bg-ems-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-green-500"

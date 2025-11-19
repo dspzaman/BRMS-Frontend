@@ -349,3 +349,62 @@ export function useConfirmAccount() {
     },
   });
 }
+
+/**
+ * Hook to confirm or reject as signaturee
+ */
+export function useConfirmSignaturee() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      requisitionId,
+      data,
+    }: {
+      requisitionId: number;
+      data: {
+        action: 'confirmed' | 'rejected';
+        comments?: string;
+      };
+    }) => {
+      const { apiClient } = await import('@/shared/api/client');
+      const response = await apiClient.post(
+        `/api/requisition-management/requisitions/${requisitionId}/signaturee-confirmation/`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    },
+  });
+}
+
+/**
+ * Hook to confirm payment (final step by account manager)
+ */
+export function useConfirmPayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      requisitionId,
+      data,
+    }: {
+      requisitionId: number;
+      data: {
+        comments?: string;
+      };
+    }) => {
+      const { apiClient } = await import('@/shared/api/client');
+      const response = await apiClient.post(
+        `/api/requisition-management/requisitions/${requisitionId}/payment-confirmation/`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    },
+  });
+}

@@ -132,7 +132,7 @@ export default function ApprovalWorkspace({ requisitionId }: ApprovalWorkspacePr
   return (
     <div className="space-y-6">
       {/* Budget Assignment Progress */}
-      <div className="bg-ems-green-50 border-2 border-ems-green-500 rounded-lg p-4">
+      <div className=" border-2 border-ems-green-500 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <svg
@@ -160,7 +160,7 @@ export default function ApprovalWorkspace({ requisitionId }: ApprovalWorkspacePr
           </div>
         </div>
         {/* Progress bar */}
-        <div className="mt-3 bg-green-100 rounded-full h-2 overflow-hidden">
+        <div className="mt-3 bg-green-50 rounded-full h-2 overflow-hidden">
           <div
             className="bg-ems-green-600 h-full transition-all duration-300"
             style={{
