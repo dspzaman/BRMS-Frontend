@@ -16,6 +16,7 @@ import EditRequisitionPage from "@/pages/Requisitions/EditRequisitionPage";
 import ViewRequisitionPage from "@/pages/Requisitions/ViewRequisitionPage";
 import ViewReports from "@/pages/Reports/ViewReports";
 import ApproveRequisitionPage from "@/pages/Requisitions/ApproveRequisitionPage";
+import ProgramBudget from "@/pages/Budget/Overview/index";
 
 
 /**
@@ -224,6 +225,17 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/budget/program"
+        element={
+          <ProtectedRoute>
+            <ProgramBudget />
+          </ProtectedRoute>
+        }
+      />
+
+      
 
       {/* Default redirect */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

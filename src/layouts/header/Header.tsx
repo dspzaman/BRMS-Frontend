@@ -50,8 +50,8 @@ export default function Header() {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">AHC - BRMS</h1>
-            <p className="text-xs text-gray-500">Budget &amp; Requisition Management System</p>
+            <h1 className="text-xl font-semibold text-gray-900">AHC - FIMS</h1>
+            <p className="text-xs text-gray-500">Financial Information Management System</p>
           </div>
         </div>
 

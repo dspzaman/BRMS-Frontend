@@ -100,13 +100,15 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
                 <div className="flex flex-col items-center">
                   
                   <div className={`w-3 h-3 rounded-full ${
-                    statusItem.action_status === 'completed' || 
-                    statusItem.action_status === 'forwarded' || 
-                    statusItem.action_status === 'approved' ||
-                    statusItem.action_status === 'confirmed'
-                      ? 'bg-ems-green-600'
-                      : 'bg-gray-400'
-                  }`}></div>
+  statusItem.action_status === 'cancelled'
+    ? 'bg-yellow-600'
+    : statusItem.action_status === 'completed' || 
+      statusItem.action_status === 'forwarded' || 
+      statusItem.action_status === 'approved' ||
+      statusItem.action_status === 'confirmed'
+    ? 'bg-ems-green-600'
+    : 'bg-gray-400'
+}`}></div>
                   {!isLast && <div className="w-0.5 h-full bg-gray-300"></div>}
                 </div>
                 <div className="flex-1 pb-4">

@@ -1,10 +1,16 @@
-// pages/Budget/Overview/index.tsx
+import { Header } from "@/layouts/header";
+import { Sidebar } from "@/layouts/sidebar";
+import ProgramBudget from "@/features/budget/ProgramBudget";
+
 export default function BudgetOverviewPage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Budget Overview</h1>
-      {/* TODO: Compose BudgetOverview from features/budget/ui */}
-      <p className="text-gray-600">Budget overview page - to be implemented</p>
-    </div>
-  );
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Header />
+            {/* Layout: header height ~64px → pt-16 */}
+            <div className="flex min-h-screen pt-16">
+                <Sidebar />
+                <ProgramBudget />
+            </div>
+        </div>
+    );
 }
