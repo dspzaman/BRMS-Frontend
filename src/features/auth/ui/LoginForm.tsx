@@ -23,7 +23,8 @@ export default function LoginForm() {
     
     try {
       await login({ username, password }, rememberMe);
-      navigate("/dashboard", { replace: true });
+      const from = location.state?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
     } catch (err: any) {
       // Extract error message from response
       const errorMsg = err?.response?.data?.error || err?.message || "Login failed";

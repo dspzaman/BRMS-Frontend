@@ -1,5 +1,5 @@
 // src/app/App.tsx
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation  } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from "@/shared/contexts/AuthContext";
 
@@ -24,6 +24,7 @@ import ProgramBudget from "@/pages/Budget/Overview/index";
  */
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated, isInitializing } = useAuth();
+  const location = useLocation();
 
   if (isInitializing) {
     return (
@@ -34,7 +35,7 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
@@ -45,6 +46,7 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
  */
 function PublicRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated, isInitializing } = useAuth();
+  const location = useLocation();  
 
   if (isInitializing) {
     return (
@@ -56,7 +58,8 @@ function PublicRoute({ children }: { children: React.ReactElement }) {
 
   // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    const from = location.state?.from?.pathname || "/dashboard";  
+    return <Navigate to={from} replace />;  
   }
 
   return children;
