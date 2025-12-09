@@ -5,9 +5,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo/Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <h1 className="text-4xl font-bold text-ems-green-500 mb-2">AHC - BRMS</h1>
+        <h1 className="text-4xl font-bold text-ems-green-500 mb-2">FIMS</h1>
         <h2 className="text-xl text-gray-600">
-          Budget &amp; Requisition Management System
+          Financial Information Management System
         </h2>
       </div>
 
