@@ -25,13 +25,9 @@ export function BasicInfoSection() {
   
   // Debug: Log current values
   useEffect(() => {
-    console.log('BasicInfoSection - payeeType:', payeeType, 'payeeId:', payeeId, 'type:', typeof payeeId);
-    console.log('Staff loaded:', staffMembers?.length, 'Vendors loaded:', vendors?.length, 'Contractors loaded:', contractors?.length);
     
     if (payeeType === 'staff' && staffMembers) {
-      console.log('Staff members:', staffMembers.map(s => ({ id: s.id, name: s.full_name })));
       const matchingStaff = staffMembers.find(s => s.id === payeeId);
-      console.log('Matching staff for ID', payeeId, ':', matchingStaff?.full_name || 'NOT FOUND');
       
       // If payeeId is set but not found in active list, this is the issue!
       if (payeeId && !matchingStaff) {
@@ -41,9 +37,7 @@ export function BasicInfoSection() {
     }
     
     if (payeeType === 'vendor' && vendors) {
-      console.log('Vendors:', vendors.map(v => ({ id: v.id, name: v.name })));
       const matchingVendor = vendors.find(v => v.id === payeeId);
-      console.log('Matching vendor for ID', payeeId, ':', matchingVendor?.name || 'NOT FOUND');
       
       if (payeeId && !matchingVendor) {
         console.warn('⚠️ Selected vendor (ID:', payeeId, ') is not in the active vendors list!');
@@ -65,7 +59,6 @@ export function BasicInfoSection() {
     if (prevPayeeType.current !== undefined && 
         prevPayeeType.current !== null && 
         prevPayeeType.current !== payeeType) {
-      console.log('Clearing payeeId because payeeType changed from', prevPayeeType.current, 'to', payeeType);
       setValue('payeeId', null);
       setValue('payeeOther', '');
     }

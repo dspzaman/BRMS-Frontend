@@ -19,8 +19,6 @@ export default function AssignedRequisitionsPage() {
   );
 
   // Debug: Log user roles and hasTeamOversight
-  console.log('User roles:', user?.roles);
-  console.log('Has team oversight:', hasTeamOversight);
 
   // Fetch data based on active tab
   const pendingQuery = useAssignedToMe();

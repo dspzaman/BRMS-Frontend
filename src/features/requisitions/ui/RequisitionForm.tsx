@@ -29,8 +29,6 @@ export default function RequisitionForm({
     initialData,
     onSuccess,
   });
-    console.log('🔍 RequisitionForm includeTravelExpenses:', formState.includeTravelExpenses);
-  console.log('🔍 RequisitionForm travelExpenses (getValues):', formState.methods.getValues('travelExpenses'));
 
 
   return (
