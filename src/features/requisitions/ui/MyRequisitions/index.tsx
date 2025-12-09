@@ -212,7 +212,7 @@ export function MyRequisitionsView() {
           <RequisitionsTable
             requisitions={filteredRequisitions}
             onDelete={handleDelete}
-            isDeleting={deleteMutation.isLoading}
+            isDeleting={deleteMutation.isPending}
           />
 
           {/* Pagination & Results Summary */}

@@ -4,7 +4,8 @@ export * from './api';
 export type {
   LoginPayload,
   LoginResponse,
-  UserProfile,
-  OrgUnit,
-  Thresholds,
+  LoginUser,
+  DirectManager,
+  UserRoleInfo,
+  UserProgramInfo
 } from './model';

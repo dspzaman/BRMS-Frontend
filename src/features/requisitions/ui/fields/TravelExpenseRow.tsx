@@ -114,7 +114,7 @@ export function TravelExpenseRow({ index, onRemove, canRemove, isNewRow = false 
   useEffect(() => {
     const km = parseFloat(String(totalKm || 0));
     const rate = parseFloat(String(ratePerKm || 0));
-    const gst = parseFloat(String(watch(`travelExpenses.${index}.gstRate`) || 0));
+    // const gst = parseFloat(String(watch(`travelExpenses.${index}.gstRate`) || 0));
     
     // Calculate amount (km * rate)
     const amount = isNaN(km) || isNaN(rate) ? 0 : km * rate;

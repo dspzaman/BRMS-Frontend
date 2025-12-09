@@ -1,6 +1,6 @@
 // src/features/requisitions/ui/AssignedRequisitions/index.tsx
 import { useState } from 'react';
-import { useRequisitionActions } from '../../hooks/useRequisitionActions';
+// import { useRequisitionActions } from '../../hooks/useRequisitionActions';
 import { RequisitionFilters } from '../components/RequisitionFilters';
 import { RequisitionActionButtons } from '../components/RequisitionActionButtons';
 import { StatusBadge } from '../MyRequisitions/StatusBadge';
@@ -29,8 +29,8 @@ export function AssignedRequisitions({
     sortOrder: 'desc' as 'asc' | 'desc',
   });
   
-  const { handleSubmit, handleApprove, handleReject, handleReturn, isProcessing } =
-    useRequisitionActions();
+  // const { handleSubmit, handleApprove, handleReject, handleReturn} =
+  //   useRequisitionActions();
 
   // Use data from props
   const requisitions = data?.results || [];
@@ -113,28 +113,28 @@ export function AssignedRequisitions({
   };
 
   // Handle actions with alerts
-  const handleAction = async (
-    action: 'submit' | 'approve' | 'reject' | 'return',
-    id: number,
-    comments?: string
-  ) => {
-    let result;
-    switch (action) {
-      case 'submit':
-        result = await handleSubmit(id);
-        break;
-      case 'approve':
-        result = await handleApprove(id, comments);
-        break;
-      case 'reject':
-        result = await handleReject(id, comments!);
-        break;
-      case 'return':
-        result = await handleReturn(id, comments!);
-        break;
-    }
-    alert(result.message);
-  };
+  // const _handleAction = async (
+  //   action: 'submit' | 'approve' | 'reject' | 'return',
+  //   id: number,
+  //   comments?: string
+  // ) => {
+  //   let result;
+  //   switch (action) {
+  //     case 'submit':
+  //       result = await handleSubmit(id);
+  //       break;
+  //     case 'approve':
+  //       result = await handleApprove(id, comments);
+  //       break;
+  //     case 'reject':
+  //       result = await handleReject(id, comments!);
+  //       break;
+  //     case 'return':
+  //       result = await handleReturn(id, comments!);
+  //       break;
+  //   }
+  //   alert(result.message);
+  // };
 
   if (isLoading) {
     return (

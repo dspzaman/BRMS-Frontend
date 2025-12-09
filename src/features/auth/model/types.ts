@@ -11,6 +11,7 @@ export interface DirectManager {
 // Role type
 export interface UserRoleInfo {
   role: string;
+  name: string;
   organization: string | null;
 }
 

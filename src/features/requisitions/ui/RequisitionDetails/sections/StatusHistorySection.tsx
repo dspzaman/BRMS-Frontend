@@ -1,6 +1,5 @@
 // src/features/requisitions/ui/RequisitionDetails/sections/StatusHistorySection.tsx
 import type { RequisitionResponse } from '../../../api/types';
-import { StatusTimelineItem } from '../components/StatusTimelineItem';
 import { STATUS_LABELS } from '../../../model/constants';
 
 

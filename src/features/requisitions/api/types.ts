@@ -1,6 +1,6 @@
 // API Request/Response Types for Requisitions
 
-import type { PayeeType, ExpenseType } from "../model/types";
+import type { PayeeType } from "../model/types";
 
 // ============================================================================
 // API Response Types (from backend)
@@ -140,8 +140,6 @@ export interface PerDiemExpenseLineItemResponse {
   created_at: string;
   updated_at: string;
 
-  expense_category: number;
-  expense_category_name?: string;
 
 }
 
@@ -372,6 +370,9 @@ export interface Vendor {
   id: number;
   name: string;
   vendor_type: string;
+  vendor_code?: string;  
+  email?: string;        
+
 }
 
 export interface CardHolder {
@@ -379,6 +380,7 @@ export interface CardHolder {
   name: string;
   display_name: string;
   card_type: string;
+  card_number_last4?: string;  
 }
 
 // ============================================================================

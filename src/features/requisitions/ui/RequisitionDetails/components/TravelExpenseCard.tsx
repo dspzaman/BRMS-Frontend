@@ -6,7 +6,7 @@ interface TravelExpenseCardProps {
   index: number;
 }
 
-export function TravelExpenseCard({ expense, index }: TravelExpenseCardProps) {
+export function TravelExpenseCard({ expense }: TravelExpenseCardProps) {
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

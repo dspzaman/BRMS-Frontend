@@ -20,7 +20,7 @@ export interface DashboardStats {
   recentActivity: Array<{
     id: number;
     requisition_number: string;
-    description: string;
+    title: string;
     total_amount: number;
     current_status: string;
     created_at: string;
@@ -77,10 +77,22 @@ export function useDashboardStats() {
         })
         .reduce((sum, r) => sum + parseFloat(r.total_amount || '0'), 0);
 
-      // Get recent activity (last 5 requisitions)
+      // Get recent activity (last 5 requisitions) - map to expected shape
       const recentActivity = requisitions
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 5);
+        .slice(0, 5)
+        .map(req => ({
+          id: req.id,
+          requisition_number: req.requisition_number,
+          title: req.title,
+          total_amount: parseFloat(req.total_amount || '0'),
+          current_status: req.current_status,
+          created_at: req.created_at,
+          prepared_by: {
+            first_name: req.prepared_by_name?.split(' ')[0] || '',
+            last_name: req.prepared_by_name?.split(' ').slice(1).join(' ') || '',
+          },
+        }));
 
       return {
         myRequisitions: {

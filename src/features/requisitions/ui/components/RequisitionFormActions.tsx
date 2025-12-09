@@ -19,11 +19,10 @@ export function RequisitionFormActions({
   onForward,
   isSaving,
 }: RequisitionFormActionsProps) {
-  const { handleSubmit, watch, formState } = useFormContext<RequisitionFormData>();
+  const { handleSubmit, watch } = useFormContext<RequisitionFormData>();
   const { user } = useAuth();
 
   // Debug: Log form errors when they exist
-  const { errors } = formState;
 
   const handleSubmitWithLogging = handleSubmit(
     onSubmit,

@@ -1,6 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import type { RequisitionFormData } from "../../model/types";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 interface SupportingDocumentRowProps {
   index: number;
@@ -13,7 +13,7 @@ export function SupportingDocumentRow({
   index, 
   onRemove, 
   canRemove,
-  isNewRow = false
+  // isNewRow = false
 }: SupportingDocumentRowProps) {
   const { register, watch, setValue, formState: { errors } } = useFormContext<RequisitionFormData>();
   const [filePreview, setFilePreview] = useState<string | null>(null);

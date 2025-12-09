@@ -4,7 +4,6 @@ import type { RequisitionFormData } from "../../model/types";
 import { GeneralExpenseRow } from "../fields/GeneralExpenseRow";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { getDefaultProgram } from "../../utils/programUtils";
-import { EmptyState } from "../shared/EmptyState";
 import { SummaryCard } from "../shared/SummaryCard";
 import { useState, useEffect } from "react";
 import { ROW_LIMITS, ROW_LIMIT_MESSAGES } from "../../model/constants";

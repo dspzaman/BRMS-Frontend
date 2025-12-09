@@ -147,7 +147,7 @@ export function useSubmitRequisition() {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       
       // Update the specific requisition in cache
-      queryClient.setQueryData(['requisitions', submittedRequisition.id], submittedRequisition);
+      queryClient.setQueryData(['requisitions', submittedRequisition.requisition.id], submittedRequisition);
     },
   });
 }

@@ -15,7 +15,8 @@ export default function ForgotPassword() {
     setIsSubmitting(true);
 
     try {
-      const response = await requestPasswordReset(email);
+      // const response = await requestPasswordReset(email);
+      await requestPasswordReset(email);
       setSuccess(true);
     } catch (err: any) {
       setError(err?.response?.data?.error || "Failed to send reset email. Please try again.");

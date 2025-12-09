@@ -5,7 +5,8 @@ interface RequisitionHeaderProps {
   requisition: RequisitionResponse;
 }
 
-export function RequisitionHeader({ requisition }: RequisitionHeaderProps) {
+export function RequisitionHeader({ requisition: _requisition }: RequisitionHeaderProps) {
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
       <div className="text-center py-8">

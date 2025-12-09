@@ -209,7 +209,7 @@ const TeamOverviewView = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         ${typeof requisition.total_with_tax === 'number'
-                          ? requisition.total_with_tax.toFixed(2)
+                          ? parseFloat(requisition.total_with_tax as string).toFixed(2)
                           : parseFloat(requisition.total_with_tax || '0').toFixed(2)}
                       </div>
                     </td>

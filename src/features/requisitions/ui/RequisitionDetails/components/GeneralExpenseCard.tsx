@@ -6,7 +6,7 @@ interface GeneralExpenseCardProps {
   index: number;
 }
 
-export function GeneralExpenseCard({ expense, index }: GeneralExpenseCardProps) {
+export function GeneralExpenseCard({ expense }: GeneralExpenseCardProps) {
   // Extract expense path and code details from the API response
   const expensePath = (expense as any).expense_path;
   const expenseCodeDetails = (expense as any).expense_code_details;

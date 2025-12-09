@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { Header } from '@/layouts/header';
 import { Sidebar } from '@/layouts/sidebar';
@@ -9,7 +9,7 @@ import TeamOverviewView from '@/features/requisitions/ui/AssignedRequisitions/Te
 import { useAssignedToMe, useMyProcessedRequisitions } from '@/features/requisitions/api/useRequisitions';
 
 export default function AssignedRequisitionsPage() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'pending' | 'processed' | 'team'>('pending');
 

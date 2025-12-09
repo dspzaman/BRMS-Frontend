@@ -14,7 +14,7 @@ export function useActiveStaff() {
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
   });
 }
@@ -33,7 +33,7 @@ export function useActiveVendors() {
       return vendors.filter(vendor => vendor.vendor_type.toLowerCase() !== 'contractor');
     },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -52,7 +52,7 @@ export function useActiveContractors() {
       return vendors.filter(vendor => vendor.vendor_type.toLowerCase() === 'contractor');
     },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -68,7 +68,7 @@ export function useActiveCardHolders() {
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }

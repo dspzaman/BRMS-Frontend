@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { useAssignedToMe } from '../api/useRequisitions';
-import type { RequisitionResponse } from '../api/types';
 
 interface FilterState {
   status: string;

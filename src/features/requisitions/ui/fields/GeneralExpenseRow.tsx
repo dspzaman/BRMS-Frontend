@@ -24,7 +24,6 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
   
   // Watch the selected category to filter expense codes
   const selectedCategory = watch(`generalExpenses.${index}.category`);
-  const selectedProgram = watch(`generalExpenses.${index}.program`);
   
   // Track previous category to detect manual changes
   const prevCategory = useRef(selectedCategory);
@@ -86,7 +85,7 @@ export function GeneralExpenseRow({ index, onRemove, canRemove, isNewRow = false
     const parentInfo = parentCategoriesWithChildren.find(p => p.id === category.id);
     return parentInfo?.hasChildren || false; // Only disable if it has children
   };
-  const gstValuePh = watch(`generalExpenses.${index}.gstRate`);
+  // const gstValuePh = watch(`generalExpenses.${index}.gstRate`);
 
   return (
     <div className="grid grid-cols-[1fr_1fr_1fr_2fr_1fr_1fr_1fr_100px] gap-3 px-3 py-2 border-b border-gray-200">

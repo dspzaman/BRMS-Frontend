@@ -13,7 +13,7 @@ export function useUpdateProfile() {
   
   return useMutation({
     mutationFn: (data: UpdateProfilePayload) => updateProfile(data),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       refreshUser();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     },
@@ -40,7 +40,7 @@ export function useUploadProfilePicture() {
   
   return useMutation({
     mutationFn: (file: File) => uploadProfilePicture(file),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       refreshUser();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     },

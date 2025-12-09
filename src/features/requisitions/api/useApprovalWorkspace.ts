@@ -8,7 +8,6 @@ import {
   returnRequisition,
 } from './requisitionApi';
 import type {
-  ApprovalWorkspaceResponse,
   ApproveWithBudgetRequest,
   RejectRequisitionRequest,
   ReturnRequisitionRequest,

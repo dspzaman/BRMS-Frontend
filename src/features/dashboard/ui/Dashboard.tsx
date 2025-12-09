@@ -190,7 +190,7 @@ export default function Dashboard() {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {req.requisition_number} - {req.description || 'No description'}
+                        {req.requisition_number} - {req.title || 'No description'}
                       </p>
                       <p className="text-xs text-gray-500">
                         {formatCurrency(parseFloat(req.total_amount?.toString() || '0'))} • {formatDistanceToNow(new Date(req.created_at), { addSuffix: true })}

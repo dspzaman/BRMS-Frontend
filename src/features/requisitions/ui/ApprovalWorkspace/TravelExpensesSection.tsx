@@ -53,7 +53,7 @@ export default function TravelExpensesSection({
       if (prev.length > 0) {
         const firstSelectedItem = items.find((i) => i.id === prev[0]);
         if (firstSelectedItem && firstSelectedItem.program !== item.program) {
-          toast.warning('Cannot select travel expenses from different programs. Please select items from the same program only.');
+          toast.error('Cannot select travel expenses from different programs. Please select items from the same program only.');
           return prev; // Don't add the item
         }
       }
@@ -77,7 +77,7 @@ export default function TravelExpensesSection({
       // Check if all items are from the same program
       const programs = [...new Set(items.map(item => item.program))];
       if (programs.length > 1) {
-        toast.warning('Cannot select all items because they are from different programs. Please select items from one program at a time.');
+        toast.error('Cannot select all items because they are from different programs. Please select items from one program at a time.');
         return;
       }
       // Auto-select category from first item

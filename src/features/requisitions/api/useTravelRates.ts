@@ -1,9 +1,9 @@
 // src/features/requisitions/api/useTravelRates.ts
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/shared/api/client';
-import type { TravelRate, TravelExpenseType } from './types';
+import type { TravelRate } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 /**
  * Generic function to fetch rates by type(s)
@@ -24,7 +24,7 @@ export function useTravelRates(): { data: TravelRate[] | undefined; isLoading: b
     queryKey: ['rates', 'travel_per_km'],
     queryFn: () => fetchRatesByType('travel_per_km'),
     staleTime: 5 * 60 * 1000, // 5 minutes - rates don't change often
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
   });
   
@@ -47,7 +47,7 @@ export function useMealRates(): {
     queryKey: ['rates', 'meal_breakfast,meal_lunch,meal_dinner'],
     queryFn: () => fetchRatesByType('meal_breakfast,meal_lunch,meal_dinner'),
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
   

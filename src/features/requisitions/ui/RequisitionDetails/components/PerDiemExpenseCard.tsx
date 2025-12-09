@@ -6,7 +6,7 @@ interface PerDiemExpenseCardProps {
   index: number;
 }
 
-export function PerDiemExpenseCard({ expense, index }: PerDiemExpenseCardProps) {
+export function PerDiemExpenseCard({ expense }: PerDiemExpenseCardProps) {
   const mealTypeLabels = {
     breakfast: 'Breakfast',
     lunch: 'Lunch',
