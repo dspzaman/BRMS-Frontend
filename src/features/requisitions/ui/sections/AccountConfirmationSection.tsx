@@ -1,7 +1,7 @@
 // src/features/requisitions/ui/sections/AccountConfirmationSection.tsx
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { useSignaturees, useConfirmAccount, useReturnForRevision } from '../../api/useRequisitions';
+import { useConfirmAccount, useReturnForRevision } from '../../api/useRequisitions';
 import type { RequisitionResponse } from '../../api/types';
 
 interface AccountConfirmationSectionProps {
@@ -10,50 +10,48 @@ interface AccountConfirmationSectionProps {
 }
 
 export function AccountConfirmationSection({ requisition, onSuccess }: AccountConfirmationSectionProps) {
-  const [paymentType, setPaymentType] = useState('');
-  const [paymentReference, setPaymentReference] = useState('');
-  const [signaturee1, setSignaturee1] = useState('');
-  const [signaturee2, setSignaturee2] = useState('');
+  const [paymentType, setPaymentType] = useState<'cheque' | 'eft' | 'wire_transfer' | ''>('');
   const [comments, setComments] = useState('');
 
-  // Fetch signaturees from API
-  const { data: signatureesData, isLoading: isLoadingSignaturees } = useSignaturees();
   const confirmMutation = useConfirmAccount();
   const returnMutation = useReturnForRevision();
 
-  // Payment types (matching backend PAYMENT_TYPE_CHOICES)
+  // Check if payee has complete banking information for EFT/Wire
+  const hasCompleteBankingInfo = requisition.payee_banking_info?.has_complete_info || false;
+
+  // Payment types for new direct signature workflow
+  // Only show EFT/Wire if payee has complete banking information
   const paymentTypes = [
     { value: '', label: 'Select Payment Type' },
     { value: 'cheque', label: 'Cheque' },
-    { value: 'bank_transfer', label: 'Bank Transfer' },
-    { value: 'cash', label: 'Cash' },
-    { value: 'credit_card', label: 'Credit Card' },
-    { value: 'other', label: 'Other' },
+    ...(hasCompleteBankingInfo 
+      ? [
+          { value: 'eft', label: 'EFT (Electronic Funds Transfer)' },
+          { value: 'wire_transfer', label: 'Wire Transfer' }
+        ] 
+      : []
+    ),
   ];
 
   const handleConfirm = async () => {
-    if (!paymentType || !paymentReference || !signaturee1 || !signaturee2) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (signaturee1 === signaturee2) {
-      toast.error('Please select two different signaturees');
+    // Validation
+    if (!paymentType) {
+      toast.error('Please select a payment type');
       return;
     }
 
     try {
+      // Simple payload - only payment type and comments
+      const payload = {
+        payment_type: paymentType,
+        comments: comments || undefined,
+      };
+
       await confirmMutation.mutateAsync({
         requisitionId: requisition.id,
-        data: {
-          payment_type: paymentType,
-          payment_reference_number: paymentReference,
-          signaturee_1: Number(signaturee1),
-          signaturee_2: Number(signaturee2),
-          comments: comments || undefined,
-        },
+        data: payload,
       });
-      toast.success('Account confirmed successfully!');
+      toast.success('Account confirmed! Requisition sent for signatures.');
       if (onSuccess) {
         onSuccess();
       }
@@ -92,7 +90,7 @@ export function AccountConfirmationSection({ requisition, onSuccess }: AccountCo
           Account Confirmation
         </h2>
         <p className="text-sm text-gray-500 mt-1">
-          Add payment details and select two signaturees to confirm this requisition.
+          Assign payment method. Requisition will be sent for authorized signatures.
         </p>
       </div>
 
@@ -105,7 +103,7 @@ export function AccountConfirmationSection({ requisition, onSuccess }: AccountCo
           </label>
           <select
             value={paymentType}
-            onChange={(e) => setPaymentType(e.target.value)}
+            onChange={(e) => setPaymentType(e.target.value as 'cheque' | 'eft' | 'wire_transfer' | '')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
             required
           >
@@ -115,78 +113,32 @@ export function AccountConfirmationSection({ requisition, onSuccess }: AccountCo
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Payment Reference Number */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Payment Reference Number <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={paymentReference}
-            onChange={(e) => setPaymentReference(e.target.value)}
-            placeholder="Enter cheque number or transaction ID"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
-            required
-          />
-        </div>
-
-        {/* Signaturee 1 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            First Signaturee <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={signaturee1}
-            onChange={(e) => setSignaturee1(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
-            disabled={isLoadingSignaturees}
-            required
-          >
-            <option value="">Select Signaturee</option>
-            {signatureesData?.map((sig) => (
-              <option 
-                key={sig.id} 
-                value={sig.id} 
-                disabled={sig.id.toString() === signaturee2}
-              >
-                {sig.first_name} {sig.last_name} ({sig.email})
-              </option>
-            ))}
-          </select>
-          {isLoadingSignaturees && (
-            <p className="text-xs text-gray-500 mt-1">Loading signaturees...</p>
+          {!hasCompleteBankingInfo && (
+            <p className="text-xs text-amber-600 mt-1 flex items-start gap-1">
+              <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span>EFT/Wire Transfer not available: Payee banking information is incomplete. Please use Cheque payment.</span>
+            </p>
           )}
         </div>
 
-        {/* Signaturee 2 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Second Signaturee <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={signaturee2}
-            onChange={(e) => setSignaturee2(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
-            disabled={isLoadingSignaturees}
-            required
-          >
-            <option value="">Select Signaturee</option>
-            {signatureesData?.map((sig) => (
-              <option 
-                key={sig.id} 
-                value={sig.id} 
-                disabled={sig.id.toString() === signaturee1}
-              >
-                {sig.first_name} {sig.last_name} ({sig.email})
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-gray-500 mt-1">
-            Must be different from the first signaturee
-          </p>
-        </div>
+        {/* Info message for selected payment type */}
+        {paymentType && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <p className="text-sm text-blue-800">
+              {paymentType === 'cheque' && (
+                <>✓ Cheque will be generated after signatures are completed and approved.</>  
+              )}
+              {paymentType === 'eft' && (
+                <>✓ EFT payment will be processed after signatures are completed and approved.</>  
+              )}
+              {paymentType === 'wire_transfer' && (
+                <>✓ Wire transfer will be processed after signatures are completed and approved.</>
+              )}
+            </p>
+          </div>
+        )}
 
         {/* Comments (Optional) */}
         <div>
@@ -226,12 +178,8 @@ export function AccountConfirmationSection({ requisition, onSuccess }: AccountCo
         <button
           onClick={handleConfirm}
           disabled={
-            !paymentType || 
-            !paymentReference || 
-            !signaturee1 || 
-            !signaturee2 || 
-            signaturee1 === signaturee2 || 
-            confirmMutation.isPending || 
+            !paymentType ||
+            confirmMutation.isPending ||
             returnMutation.isPending
           }
           className="px-6 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
@@ -246,7 +194,7 @@ export function AccountConfirmationSection({ requisition, onSuccess }: AccountCo
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Confirm & Assign Signaturees
+              Confirm 
             </>
           )}
         </button>

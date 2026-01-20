@@ -14,6 +14,7 @@ import type {
   SupportingDocumentResponse,
   ApprovalWorkspaceResponse,
   ApproveWithBudgetRequest,
+  ChequeResponse,  
 } from './types';
 
 // Base URL for requisition endpoints
@@ -544,6 +545,34 @@ export const updatePerDiemBudgetAssignment = async (
   );
   return response.data;
 };
+// ============================================================================
+// Cheque Operations (Batch-Driven Flow)
+// ============================================================================
+/**
+ * Get list of unbatched cheques for account confirmation
+ * @param params - Optional filters (status, search, payee matching)
+ */
+export const getUnbatchedCheques = async (params?: {
+  status?: string;
+  search?: string;
+  payee_type?: string;
+  payee_id?: number;
+}): Promise<ChequeResponse[]> => {
+  const response = await apiClient.get(
+    `${BASE_URL}/cheques/`,
+    { 
+      params: { 
+        unbatched: true,
+        ...params 
+      } 
+    }
+  );
+  // Handle both paginated and non-paginated responses
+  if (response.data && Array.isArray(response.data.results)) {
+    return response.data.results;
+  }
+  return Array.isArray(response.data) ? response.data : [];
+};
 
 // ============================================================================
 // Export all
@@ -590,4 +619,6 @@ export default {
   approveWithBudget,
   updateTravelBudgetAssignment,
   updatePerDiemBudgetAssignment,
+  // Cheque Operations (NEW)
+  getUnbatchedCheques,
 };

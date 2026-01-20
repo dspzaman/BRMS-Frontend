@@ -159,6 +159,9 @@ export interface RequisitionResponse {
   payee_other: number | null;
   payee_other_name?: string;
   
+  // Payee banking information (for EFT validation)
+  payee_banking_info?: BankingInfoResponse | null;
+  
   // Financial
   total_amount: string;
   gst_rate: string;
@@ -166,6 +169,14 @@ export interface RequisitionResponse {
   total_with_tax: string;
   payment_type: string | null;
   payment_reference_number: string | null;
+  
+  // Batch-driven flow: Assigned cheque info
+  assigned_cheque_id?: number | null;
+  assigned_cheque_number?: string | null;
+  
+  // Batch tracking
+  current_batch?: number | null;
+  current_batch_number?: string | null;
   
   // Workflow
   prepared_by: number;
@@ -286,6 +297,13 @@ export interface ReturnRequisitionRequest {
   comments: string; // Required when returning for revision
 }
 
+export interface AccountConfirmationRequest {
+  payment_type: 'cheque' | 'eft' | 'wire_transfer';
+  
+  // Optional comments
+  comments?: string;
+}
+
 // ============================================================================
 // List/Filter Types
 // ============================================================================
@@ -372,7 +390,6 @@ export interface Vendor {
   vendor_type: string;
   vendor_code?: string;  
   email?: string;        
-
 }
 
 export interface CardHolder {
@@ -381,6 +398,42 @@ export interface CardHolder {
   display_name: string;
   card_type: string;
   card_number_last4?: string;  
+}
+
+// ============================================================================
+// Cheque & Batch Types (Batch-Driven Approval Flow)
+// ============================================================================
+
+/**
+ * Banking information for payees (Staff, Vendors, Other Payees)
+ */
+export interface BankingInfoResponse {
+  id: number;
+  institution_number?: string | null;
+  transit_number?: string | null;
+  account_number?: string | null;
+  sin_number?: string | null;
+  is_verified: boolean;
+  verified_by?: number | null;
+  verified_date?: string | null;
+  has_complete_info: boolean;  // Computed property from backend
+}
+
+/**
+ * Cheque response from backend
+ * Used for account confirmation cheque selection
+ */
+export interface ChequeResponse {
+  id: number;
+  cheque_number: string;
+  cheque_date?: string;
+  payee_type: string;
+  payee_name: string;
+  total_amount: string;
+  status: 'pending' | 'pending_signature' | 'partially_signed' | 'signed' | 'distributed' | 'cashed' | 'void';
+  requisition_count?: number;
+  batch?: number | null;
+  created_at?: string;
 }
 
 // ============================================================================

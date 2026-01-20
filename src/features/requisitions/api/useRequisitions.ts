@@ -14,13 +14,16 @@ import {
   rejectRequisition,
   returnRequisition,
   getMyProcessedRequisitions,
-  getTeamRequisitions
+  getTeamRequisitions,
+  getUnbatchedCheques,
 } from './requisitionApi';
 import type { 
   RequisitionListParams, 
   RequisitionListResponse, 
   RequisitionResponse,
-  CreateRequisitionRequest 
+  CreateRequisitionRequest,
+  ChequeResponse,              
+  AccountConfirmationRequest, 
 } from './types';
 
 /**
@@ -303,7 +306,22 @@ export function useTeamRequisitions(filters?: {
     staleTime: 30 * 1000, // 30 seconds
   });
 }
-
+/**
+ * Hook to fetch unbatched cheques for account confirmation
+ * @param params - Optional filters (status, search, payee matching)
+ */
+export function useUnbatchedCheques(params?: {
+  status?: string;
+  search?: string;
+  payee_type?: string;
+  payee_id?: number;
+}) {
+  return useQuery<ChequeResponse[]>({
+    queryKey: ['cheques', 'unbatched', params],
+    queryFn: () => getUnbatchedCheques(params),
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
 /**
  * Hook to fetch users with signaturee authority
  */
@@ -318,9 +336,9 @@ export function useSignaturees() {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 }
-
 /**
- * Hook to confirm account with payment details and signaturees
+ * Hook to confirm account with payment details (Batch-Driven Flow)
+ * No longer requires signaturees - they are assigned at batch level
  */
 export function useConfirmAccount() {
   const queryClient = useQueryClient();
@@ -331,13 +349,7 @@ export function useConfirmAccount() {
       data,
     }: {
       requisitionId: number;
-      data: {
-        payment_type: string;
-        payment_reference_number: string;
-        signaturee_1: number;
-        signaturee_2: number;
-        comments?: string;
-      };
+      data: AccountConfirmationRequest;
     }) => {
       const { apiClient } = await import('@/shared/api/client');
       const response = await apiClient.post(
@@ -348,6 +360,7 @@ export function useConfirmAccount() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['cheques'] }); // Invalidate cheques too
     },
   });
 }

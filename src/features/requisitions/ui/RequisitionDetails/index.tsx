@@ -2,6 +2,7 @@
 import type { RequisitionResponse } from '../../api/types';
 import { ExpenseLinesDisplay } from './sections/ExpenseLinesDisplay';
 import { FinancialSummaryDisplay } from './sections/FinancialSummaryDisplay';
+import { PaymentInfoSection } from './sections/PaymentInfoSection';
 import { StatusHistorySection } from './sections/StatusHistorySection';
 import { SupportingDocumentsDisplay } from './sections/SupportingDocumentsDisplay';
 
@@ -17,6 +18,9 @@ export function RequisitionDetails({ requisition }: RequisitionDetailsProps) {
 
       {/* Financial Summary */}
       <FinancialSummaryDisplay requisition={requisition} />
+
+      {/* Payment Information - Only shown if payment details exist */}
+      <PaymentInfoSection requisition={requisition} />
 
       {/* Supporting Documents */}
       <SupportingDocumentsDisplay requisition={requisition} />

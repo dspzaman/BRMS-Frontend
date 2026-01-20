@@ -10,6 +10,7 @@ import { ReviewSection } from '@/features/requisitions/ui/sections/ReviewSection
 import { AccountConfirmationSection } from '@/features/requisitions/ui/sections/AccountConfirmationSection';
 import { SignatureeConfirmationSection } from '@/features/requisitions/ui/sections/SignatureeConfirmationSection';
 import { PaymentConfirmationSection } from '@/features/requisitions/ui/sections/PaymentConfirmationSection';
+import { SignatureApprovalSection } from '@/features/requisitions/ui/sections/SignatureApprovalSection';
 import { RecallButton } from '@/features/requisitions/ui/components/RecallButton';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
@@ -181,14 +182,22 @@ export default function ViewRequisitionPage() {
                       
                       // Can recall if:
                       // 1. User has completed at least one status
-                      // 2. Current status exists and is still pending
+                      // 2. Current status exists and is still pending (assignee hasn't acted)
                       // 3. User is NOT the current assignee
-                      // 4. Requisition is not in terminal state
+                      // 4. Requisition is not in terminal state OR
+                      //    If in ready_pool, must NOT be in a batch yet
+                      const isInBatch = requisition.current_batch !== null && requisition.current_batch !== undefined;
+                      const isTerminalState = ['completed', 'cancelled', 'rejected'].includes(requisition.current_status);
+                      const isBatchLocked = ['pending_signature', 'partially_signed', 'fully_signed', 'awaiting_payment', 'payment_processing', 'payment_confirmed'].includes(requisition.current_status);
+                      const isReadyPoolButInBatch = requisition.current_status === 'ready_pool' && isInBatch;
+                      
                       const canRecall = userCompletedStatuses.length > 0 && 
                                        currentStatus && 
                                        currentStatus.action_status === 'pending' && 
                                        requisition.current_assignee !== user.id &&
-                                       !['completed', 'cancelled', 'rejected'].includes(requisition.current_status);
+                                       !isTerminalState &&
+                                       !isBatchLocked &&
+                                       !isReadyPoolButInBatch;
                       
                       return canRecall ? (
                         <RecallButton 
@@ -298,6 +307,18 @@ export default function ViewRequisitionPage() {
                 <PaymentConfirmationSection 
                   requisition={requisition} 
                   onSuccess={() => navigate('/requisitions/assigned')}
+                />
+              </div>
+            )}
+
+            {/* Signature Approval Section - Show if user is assignee and status is signature_1, signature_2, etc. */}
+            {user && 
+             requisition.current_assignee === user.id && 
+             requisition.current_status?.startsWith('signature_') && (
+              <div className="mb-6">
+                <SignatureApprovalSection 
+                  requisition={requisition} 
+                  onSuccess={() => navigate('/batches/my-signatures')}
                 />
               </div>
             )}

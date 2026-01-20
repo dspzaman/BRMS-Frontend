@@ -57,6 +57,12 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
   if (action_status === 'approved') {
     return 'Approved';
   }
+  if (action_status === 'confirmed') {
+    return 'Confirmed';
+  }
+  if (action_status === 'signed') {
+    return 'Signed';
+  }
   if (action_status === 'forwarded') {
     return 'Forwarded';
   }
@@ -104,7 +110,8 @@ export function StatusHistorySection({ requisition }: StatusHistorySectionProps)
     : statusItem.action_status === 'completed' || 
       statusItem.action_status === 'forwarded' || 
       statusItem.action_status === 'approved' ||
-      statusItem.action_status === 'confirmed'
+      statusItem.action_status === 'confirmed' ||
+      statusItem.action_status === 'signed'
     ? 'bg-ems-green-600'
     : 'bg-gray-400'
 }`}></div>

@@ -3,7 +3,7 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 
 export default function Sidebar() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
 
   return (
     <aside className="w-64 bg-gray-50 transition-all duration-300" style={{ backgroundColor: "#F8F8F8" }}>
@@ -73,6 +73,60 @@ export default function Sidebar() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Assigned Requisitions
+            </Link>
+          )}
+
+          {/* Ready For Payment - Only show for users with account role */}
+          {hasRole('account') && (
+            <Link 
+              to="/payment-processing"
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
+                location.pathname.startsWith('/payment-processing')
+                  ? 'text-white bg-ems-green-600' 
+                  : 'text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Ready For Payment
+            </Link>
+          )}
+
+          {/* Processed Payments - Show for account team and signaturees */}
+          {(hasRole('account') || user?.signaturee_authority) && (
+            <Link 
+              to="/processed-payments"
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
+                location.pathname.startsWith('/processed-payments')
+                  ? 'text-white bg-ems-green-600' 
+                  : 'text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Processed Payments
+            </Link>
+          )}
+
+          {/* My Signatures - Only show for users with signaturee authority */}
+          {user?.signaturee_authority && (
+            <Link 
+              to="/batches/my-signatures"
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
+                location.pathname === '/batches/my-signatures'
+                  ? 'text-white bg-ems-green-600' 
+                  : 'text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              My Signatures
             </Link>
           )}
 

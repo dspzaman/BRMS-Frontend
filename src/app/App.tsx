@@ -18,6 +18,15 @@ import ViewReports from "@/pages/Reports/ViewReports";
 import ApproveRequisitionPage from "@/pages/Requisitions/ApproveRequisitionPage";
 import ProgramBudget from "@/pages/Budget/Overview/index";
 
+// Batch Management Pages
+import ReadyPoolPage from "@/pages/batches/ReadyPoolPage";
+import BatchListPage from "@/pages/batches/BatchListPage";
+import BatchDetailPage from "@/pages/batches/BatchDetailPage";
+import MySignaturesPage from "@/pages/batches/MySignaturesPage";
+import ChequeGenerationPage from "@/pages/batches/ChequeGenerationPage";
+import PaymentProcessingPage from "@/pages/batches/PaymentProcessingPage";
+import ProcessedPaymentsPage from "@/pages/batches/ProcessedPaymentsPage";
+import { CreateEFTBatchPage } from "@/features/batches/ui/CreateEFTBatchPage";
 
 /**
  * Protects routes that require authentication.
@@ -78,6 +87,44 @@ function ApproverRoute({ children }: { children: React.ReactElement }) {
 
   if (!user?.can_approve) {
     // Not an approver → redirect to My Requisitions
+    return <Navigate to="/requisitions/my-requisitions" replace />;
+  }
+
+  return children;
+}
+
+function SignatureeRoute({ children }: { children: React.ReactElement }) {
+  const { user, isInitializing } = useAuth();
+
+  if (isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!user?.signaturee_authority) {
+    // Not a signaturee → redirect to My Requisitions
+    return <Navigate to="/requisitions/my-requisitions" replace />;
+  }
+
+  return children;
+}
+
+function AccountRoute({ children }: { children: React.ReactElement }) {
+  const { isInitializing, hasRole } = useAuth();
+
+  if (isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!hasRole('account')) {
+    // Not in account department → redirect to My Requisitions
     return <Navigate to="/requisitions/my-requisitions" replace />;
   }
 
@@ -216,6 +263,105 @@ export default function App() {
             <ApproverRoute>
               <ApproveRequisitionPage />
             </ApproverRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Payment Processing Routes */}
+      <Route
+        path="/payment-processing"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <PaymentProcessingPage />
+            </AccountRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/payment-processing/cheques"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <ChequeGenerationPage />
+            </AccountRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/processed-payments"
+        element={
+          <ProtectedRoute>
+            <ProcessedPaymentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/create-eft-batch"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <CreateEFTBatchPage />
+            </AccountRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Batch Management Routes */}
+      <Route
+        path="/batches/generate-cheques"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <ChequeGenerationPage />
+            </AccountRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/batches/ready-pool"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <ReadyPoolPage />
+            </AccountRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/batches/my-signatures"
+        element={
+          <ProtectedRoute>
+            <SignatureeRoute>
+              <MySignaturesPage />
+            </SignatureeRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/batches/:id"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <BatchDetailPage />
+            </AccountRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/batches"
+        element={
+          <ProtectedRoute>
+            <AccountRoute>
+              <BatchListPage />
+            </AccountRoute>
           </ProtectedRoute>
         }
       />

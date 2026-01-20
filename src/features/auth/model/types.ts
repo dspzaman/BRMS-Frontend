@@ -48,6 +48,7 @@ export type LoginUser = {
   
   // Roles and permissions
   can_approve: boolean;
+  signaturee_authority: boolean;
   roles: UserRoleInfo[];
   programs: UserProgramInfo[];
   
