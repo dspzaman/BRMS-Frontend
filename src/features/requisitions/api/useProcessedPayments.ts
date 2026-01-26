@@ -57,6 +57,22 @@ export interface ProcessedDraft {
   created_at: string;
 }
 
+export interface ProcessedEFTBatch {
+  id: number;
+  batch_number: string;
+  batch_date: string;
+  processing_date: string | null;
+  status: string;
+  status_display: string;
+  total_amount: string;
+  draft_count: number;
+  requisition_count: number;
+  created_by_name: string;
+  created_at: string;
+  processed_by_name: string | null;
+  processed_at: string | null;
+}
+
 export interface ProcessedPaymentsResponse {
   summary: {
     cheque: {
@@ -73,7 +89,7 @@ export interface ProcessedPaymentsResponse {
     };
   };
   cheques: ProcessedCheque[];
-  drafts?: ProcessedDraft[];
+  eft_batches?: ProcessedEFTBatch[];
   total_count: number;
 }
 

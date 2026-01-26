@@ -25,6 +25,12 @@ export function ProcessedPaymentsPage() {
   const [voidModalOpen, setVoidModalOpen] = useState(false);
   const [voidingCheque, setVoidingCheque] = useState<{ id: number; number: string } | null>(null);
   const [selectedDraftId, setSelectedDraftId] = useState<number | null>(null);
+  
+  // Search and filter states
+  const [chequeSearchTerm, setChequeSearchTerm] = useState('');
+  const [chequeStatusFilter, setChequeStatusFilter] = useState<string>('all');
+  const [eftSearchTerm, setEftSearchTerm] = useState('');
+  const [eftStatusFilter, setEftStatusFilter] = useState<string>('all');
 
   const { data: chequeData, isLoading: chequeLoading, refetch: refetchCheques } = useProcessedPayments('cheque');
   const { data: eftData, isLoading: eftLoading } = useProcessedPayments('eft');
@@ -79,7 +85,32 @@ export function ProcessedPaymentsPage() {
 
   const isLoading = chequeLoading || eftLoading || wireLoading;
   const currentData = getCurrentData();
-  const cheques = currentData?.cheques || [];
+  const allCheques = currentData?.cheques || [];
+  const allEftBatches = currentData?.eft_batches || [];
+  
+  // Filter cheques based on search term and status
+  const filteredCheques = allCheques.filter((cheque: any) => {
+    const matchesSearch = chequeSearchTerm === '' || 
+      cheque.cheque_number.toLowerCase().includes(chequeSearchTerm.toLowerCase()) ||
+      cheque.payee_name.toLowerCase().includes(chequeSearchTerm.toLowerCase());
+    
+    const matchesStatus = chequeStatusFilter === 'all' || cheque.status === chequeStatusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+  
+  // Filter EFT batches based on search term and status
+  const filteredEftBatches = allEftBatches.filter((batch: any) => {
+    const matchesSearch = eftSearchTerm === '' || 
+      batch.batch_number.toLowerCase().includes(eftSearchTerm.toLowerCase());
+    
+    const matchesStatus = eftStatusFilter === 'all' || batch.status === eftStatusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+  
+  const cheques = filteredCheques;
+  const eftBatches = filteredEftBatches;
 
   const getNextStatus = (currentStatus: string): string | null => {
     const statusFlow: Record<string, string> = {
@@ -558,6 +589,92 @@ export function ProcessedPaymentsPage() {
         </nav>
       </div>
 
+      {/* Search and Filter Section */}
+      {(activeTab === 'cheque' || activeTab === 'eft') && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={activeTab === 'cheque' ? 'Search by cheque number or payee name...' : 'Search by batch number...'}
+                  value={activeTab === 'cheque' ? chequeSearchTerm : eftSearchTerm}
+                  onChange={(e) => activeTab === 'cheque' ? setChequeSearchTerm(e.target.value) : setEftSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* Status Filter */}
+            <div className="w-full sm:w-64">
+              <select
+                value={activeTab === 'cheque' ? chequeStatusFilter : eftStatusFilter}
+                onChange={(e) => activeTab === 'cheque' ? setChequeStatusFilter(e.target.value) : setEftStatusFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ems-green-500 focus:border-ems-green-500"
+              >
+                <option value="all">All Statuses</option>
+                {activeTab === 'cheque' ? (
+                  <>
+                    <option value="generated">Generated</option>
+                    <option value="printed">Printed</option>
+                    <option value="signed">Signed</option>
+                    <option value="dispatched">Dispatched</option>
+                    <option value="mailed">Mailed</option>
+                    <option value="cashed">Cashed</option>
+                    <option value="voided">Voided</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="stop_payment">Stop Payment</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="generated">Generated</option>
+                    <option value="processed">Processed</option>
+                  </>
+                )}
+              </select>
+            </div>
+            
+            {/* Clear Filters Button */}
+            {((activeTab === 'cheque' && (chequeSearchTerm || chequeStatusFilter !== 'all')) ||
+              (activeTab === 'eft' && (eftSearchTerm || eftStatusFilter !== 'all'))) && (
+              <button
+                onClick={() => {
+                  if (activeTab === 'cheque') {
+                    setChequeSearchTerm('');
+                    setChequeStatusFilter('all');
+                  } else {
+                    setEftSearchTerm('');
+                    setEftStatusFilter('all');
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+          
+          {/* Results Count */}
+          <div className="mt-3 text-sm text-gray-600">
+            {activeTab === 'cheque' ? (
+              <span>
+                Showing <span className="font-semibold">{cheques.length}</span> of <span className="font-semibold">{allCheques.length}</span> cheques
+              </span>
+            ) : (
+              <span>
+                Showing <span className="font-semibold">{eftBatches.length}</span> of <span className="font-semibold">{allEftBatches.length}</span> batches
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Bulk Mode Toggle Buttons */}
       {!bulkMode && (hasGeneratedCheques || hasDispatchedCheques) && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
@@ -824,11 +941,11 @@ export function ProcessedPaymentsPage() {
               </table>
             )
           ) : activeTab === 'eft' ? (
-            /* EFT/Draft Table */
-            currentData?.drafts?.length === 0 ? (
+            /* EFT Batch Table */
+            eftBatches.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <div className="text-4xl mb-2">📭</div>
-                <div>No EFT payments generated yet</div>
+                <div>No EFT batches generated yet</div>
                 <p className="text-sm mt-2">Click "Create EFT Batch" to get started</p>
               </div>
             ) : (
@@ -836,19 +953,22 @@ export function ProcessedPaymentsPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Draft Number
+                      Batch Number
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Payee
+                      Batch Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Amount
+                      Processing Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payees
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Requisitions
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Payment Date
+                      Total Amount
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -862,55 +982,57 @@ export function ProcessedPaymentsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentData?.drafts?.map((draft: any) => (
-                    <tr key={draft.id} className="hover:bg-gray-50">
+                  {eftBatches.map((batch: any) => (
+                    <tr key={batch.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => setSelectedDraftId(draft.id)}
+                          onClick={() => navigate(`/batches/eft/${batch.id}`)}
                           className="text-sm font-medium text-ems-green-600 hover:text-ems-green-700 hover:underline cursor-pointer"
                         >
-                          {draft.draft_number}
+                          {batch.batch_number}
                         </button>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{draft.payee_name}</div>
-                        <div className="text-xs text-gray-500">{draft.payee_type}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {formatDate(batch.batch_date)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {batch.processing_date ? formatDate(batch.processing_date) : 'Not set'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {batch.draft_count} payee{batch.draft_count !== 1 ? 's' : ''}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {batch.requisition_count} requisition{batch.requisition_count !== 1 ? 's' : ''}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-semibold text-gray-900">
-                          {formatCurrency(draft.total_amount)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {draft.requisition_count} requisition{draft.requisition_count !== 1 ? 's' : ''}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {draft.requisition_numbers?.slice(0, 3).join(', ')}
-                          {draft.requisition_count > 3 && ` +${draft.requisition_count - 3} more`}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {draft.draft_date ? formatDate(draft.draft_date) : 'N/A'}
+                          {formatCurrency(batch.total_amount)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          draft.current_status === 'generated' ? 'bg-yellow-100 text-yellow-800' :
-                          draft.current_status === 'processed' ? 'bg-green-100 text-green-800' :
+                          batch.status === 'generated' ? 'bg-yellow-100 text-yellow-800' :
+                          batch.status === 'processed' ? 'bg-green-100 text-green-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {draft.status_display || draft.current_status}
+                          {batch.status_display || batch.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{draft.created_by_name}</div>
-                        <div className="text-xs text-gray-500">{formatDate(draft.created_at)}</div>
+                        <div className="text-sm text-gray-900">{batch.created_by_name}</div>
+                        <div className="text-xs text-gray-500">{formatDate(batch.created_at)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => setSelectedDraftId(draft.id)}
+                          onClick={() => navigate(`/batches/eft/${batch.id}`)}
                           className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
                         >
                           View Details

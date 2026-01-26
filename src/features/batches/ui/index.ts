@@ -6,5 +6,6 @@ export { MySignaturesPage } from './MySignaturesPage';
 export { ChequeGenerationPage } from './ChequeGenerationPage';
 export { PaymentProcessingDashboard } from './PaymentProcessingDashboard';
 export { ProcessedPaymentsPage } from './ProcessedPaymentsPage';
+export { EFTBatchDetailPage } from './EFTBatchDetailPage';
 export { ChequeDetailDrawer } from './ChequeDetailDrawer';
 export { CreateBatchModal } from './CreateBatchModal';

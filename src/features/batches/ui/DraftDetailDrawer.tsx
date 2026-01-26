@@ -1,4 +1,4 @@
-import { useDraftDetail, useDraftStatusHistory, useUpdateDraftStatus, useExportDraftCSV } from '@/features/requisitions/api/useEFTBatch';
+import { useDraftDetail, useDraftStatusHistory, useUpdateDraftStatus } from '@/features/requisitions/api/useEFTBatch';
 import toast from 'react-hot-toast';
 import { showConfirmation } from '@/shared/utils/toastHelpers';
 
@@ -11,7 +11,6 @@ export function DraftDetailDrawer({ draftId, onClose }: DraftDetailDrawerProps) 
   const { data: draft, isLoading } = useDraftDetail(draftId);
   const { data: statusHistory, isLoading: historyLoading } = useDraftStatusHistory(draftId);
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateDraftStatus();
-  const { mutate: exportCSV, isPending: isExporting } = useExportDraftCSV();
 
   if (!draftId) return null;
 
@@ -68,19 +67,6 @@ export function DraftDetailDrawer({ draftId, onClose }: DraftDetailDrawerProps) 
             },
           }
         );
-      },
-    });
-  };
-
-  const handleExportCSV = () => {
-    if (!draft) return;
-
-    exportCSV(draft.id, {
-      onSuccess: () => {
-        toast.success('CSV file downloaded successfully');
-      },
-      onError: (error: any) => {
-        toast.error('Failed to export CSV');
       },
     });
   };
@@ -317,32 +303,22 @@ export function DraftDetailDrawer({ draftId, onClose }: DraftDetailDrawerProps) 
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 p-6 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={handleExportCSV}
-            disabled={!draft || isExporting}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isExporting ? 'Exporting...' : '📥 Download CSV'}
-          </button>
-          
-          <div className="flex gap-3">
-            {draft && draft.current_status === 'generated' && (
-              <button
-                onClick={handleMarkAsProcessed}
-                disabled={isUpdating}
-                className="px-6 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isUpdating ? 'Processing...' : '✓ Mark as Processed'}
-              </button>
-            )}
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+          {draft && draft.current_status === 'generated' && (
             <button
-              onClick={onClose}
-              className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              onClick={handleMarkAsProcessed}
+              disabled={isUpdating}
+              className="px-6 py-2 bg-ems-green-600 text-white rounded-md hover:bg-ems-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Close
+              {isUpdating ? 'Processing...' : '✓ Mark as Processed'}
             </button>
-          </div>
+          )}
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          >
+            Close
+          </button>
         </div>
       </div>
     </>

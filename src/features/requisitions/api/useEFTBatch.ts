@@ -95,6 +95,54 @@ interface UpdateStatusPayload {
   notes?: string;
 }
 
+interface EFTBatchDetail {
+  id: number;
+  batch_number: string;
+  batch_date: string;
+  processing_date: string | null;
+  status: string;
+  status_display: string;
+  total_amount: string;
+  draft_count: number;
+  requisition_count: number;
+  created_by: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
+  created_at: string;
+  processed_by: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
+  processed_at: string | null;
+  notes: string;
+  comments: string;
+  drafts: Array<{
+    id: number;
+    draft_number: string;
+    draft_date: string;
+    payee_name: string;
+    payee_type: string;
+    total_amount: string;
+    current_status: string;
+    requisition_count: number;
+    requisition_numbers: string[];
+    bank_name: string;
+    account_number: string;
+    transit_number: string;
+    institution_number: string;
+  }>;
+}
+
+interface UpdateBatchStatusPayload {
+  status: 'generated' | 'processed';
+  notes?: string;
+  processing_date?: string;
+  comments?: string;
+}
+
 // ============================================================================
 // HOOKS
 // ============================================================================
@@ -221,6 +269,78 @@ export const useExportBatchCSV = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      
+      return response.data;
+    },
+  });
+};
+
+// ============================================================================
+// EFT BATCH MANAGEMENT HOOKS
+// ============================================================================
+
+export const useEFTBatchDetail = (batchId: number | null) => {
+  return useQuery({
+    queryKey: ['eft-batch-detail', batchId],
+    queryFn: async () => {
+      if (!batchId) return null;
+      
+      const response = await apiClient.get<EFTBatchDetail>(
+        `/api/requisition-management/eft/batches/${batchId}/`
+      );
+      return response.data;
+    },
+    enabled: !!batchId,
+  });
+};
+
+export const useUpdateEFTBatchStatus = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ batchId, payload }: { batchId: number; payload: UpdateBatchStatusPayload }) => {
+      const response = await apiClient.post(
+        `/api/requisition-management/eft/batches/${batchId}/update-status/`,
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eft-batch-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['processed-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['draft-detail'] });
+    },
+  });
+};
+
+export const useExportEFTBatchCSV = () => {
+  return useMutation({
+    mutationFn: async (batchId: number) => {
+      const response = await apiClient.get(
+        `/api/requisition-management/eft/batches/${batchId}/export-csv/`,
+        { responseType: 'blob' }
+      );
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extract filename from Content-Disposition header if available
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `EFT_Batch_${batchId}.csv`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
       
       return response.data;
     },

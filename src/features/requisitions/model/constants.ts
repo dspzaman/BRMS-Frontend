@@ -73,10 +73,32 @@ export const STATUS_LABELS: Record<string, string> = {
   awaiting_payment: 'Awaiting Payment',
   payment_processing: 'Payment Processing',
   payment_confirmed: 'Payment Confirmed',
+  payment_completed: 'Payment Completed',
   ed_approval: 'ED Approval',
   board_approval: 'Board Approval',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  
+  // Cheque statuses
+  cheque_generated: 'Cheque Generated',
+  cheque_signed: 'Cheque Signed',
+  cheque_delivered: 'Cheque Delivered',
+  
+  // EFT/Draft statuses
+  eft_generated: 'EFT Generated',
+  eft_approved: 'EFT Approved',
+  eft_submitted_to_bank: 'EFT Submitted to Bank',
+  
+  // Wire transfer statuses
+  wire_generated: 'Wire Transfer Generated',
+  wire_submitted: 'Wire Transfer Submitted',
+  wire_completed: 'Wire Transfer Completed',
+  
+  // Signature statuses
+  signature_1: 'Requisition Signature 1',
+  signature_2: 'Requisition Signature 2',
+  signature_3: 'Requisition Signature 3',
+  signature_4: 'Requisition Signature 4',
 };
 
 // File Upload Constraints

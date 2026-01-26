@@ -80,14 +80,14 @@ export function PaymentProcessingDashboard() {
   const getTabLabel = (type: PaymentType) => {
     const data = type === 'cheque' ? chequeData : type === 'eft' ? eftData : wireData;
     const count = data?.requisitions?.length || 0;
-    const label = type === 'cheque' ? 'Cheques' : type === 'eft' ? 'DD/Draft' : 'Wire Transfer';
+    const label = type === 'cheque' ? 'Cheques' : type === 'eft' ? 'EFT' : 'Wire Transfer';
     return `${label} (${count})`;
   };
 
   const getPaymentTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       cheque: 'Cheque',
-      eft: 'DD/Draft',
+      eft: 'EFT',
       wire: 'Wire Transfer',
       office_credit_card: 'Credit Card',
     };
@@ -142,7 +142,7 @@ export function PaymentProcessingDashboard() {
         <div className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-gray-600 mb-1">DD/Draft</div>
+              <div className="text-sm text-gray-600 mb-1">EFT</div>
               <div className="text-2xl font-bold text-gray-900">
                 {eftData?.requisitions?.length || 0}
               </div>
@@ -248,7 +248,7 @@ export function PaymentProcessingDashboard() {
             className="px-4 py-2 bg-ems-green-600 text-white rounded-lg hover:bg-ems-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
           >
             {activeTab === 'cheque' && 'Generate Cheques →'}
-            {activeTab === 'eft' && 'Generate DD →'}
+            {activeTab === 'eft' && 'Generate EFT →'}
             {activeTab === 'wire' && 'Process Wire Transfer →'}
           </button>
         </div>

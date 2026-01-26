@@ -26,7 +26,8 @@ import MySignaturesPage from "@/pages/batches/MySignaturesPage";
 import ChequeGenerationPage from "@/pages/batches/ChequeGenerationPage";
 import PaymentProcessingPage from "@/pages/batches/PaymentProcessingPage";
 import ProcessedPaymentsPage from "@/pages/batches/ProcessedPaymentsPage";
-import { CreateEFTBatchPage } from "@/features/batches/ui/CreateEFTBatchPage";
+import EFTBatchDetailPage from "@/pages/batches/EFTBatchDetailPage";
+import CreateEFTBatchPage from "@/pages/batches/CreateEFTBatchPage";
 
 /**
  * Protects routes that require authentication.
@@ -295,6 +296,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ProcessedPaymentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/batches/eft/:batchId"
+        element={
+          <ProtectedRoute>
+            <EFTBatchDetailPage />
           </ProtectedRoute>
         }
       />

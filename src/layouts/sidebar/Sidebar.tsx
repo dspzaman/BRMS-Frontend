@@ -1,9 +1,31 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { 
+  useAssignedRequisitionsCount, 
+  usePaymentProcessingCount, 
+  usePendingSignaturesCount 
+} from "@/features/requisitions/api/useRequisitionCounts";
 
 export default function Sidebar() {
   const location = useLocation();
   const { user, hasRole } = useAuth();
+
+  // Fetch counts conditionally based on user permissions
+  const assignedCount = useAssignedRequisitionsCount(!!user?.can_approve);
+  const paymentCount = usePaymentProcessingCount(hasRole('account'));
+  const signaturesCount = usePendingSignaturesCount(!!user?.signaturee_authority);
+
+  // Count badge component
+  const CountBadge = ({ count, isActive }: { count?: number; isActive: boolean }) => {
+    if (!count || count === 0) return null;
+    return (
+      <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${
+        isActive ? 'bg-white text-ems-green-600' : 'bg-ems-green-600 text-white'
+      }`}>
+        {count}
+      </span>
+    );
+  };
 
   return (
     <aside className="w-64 bg-gray-50 transition-all duration-300" style={{ backgroundColor: "#F8F8F8" }}>
@@ -73,6 +95,7 @@ export default function Sidebar() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Assigned Requisitions
+              <CountBadge count={assignedCount.data} isActive={location.pathname === '/requisitions/assigned' || location.pathname.startsWith('/requisitions/approve/')} />
             </Link>
           )}
 
@@ -91,6 +114,7 @@ export default function Sidebar() {
                   d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               Ready For Payment
+              <CountBadge count={paymentCount.data} isActive={location.pathname.startsWith('/payment-processing')} />
             </Link>
           )}
 
@@ -127,6 +151,7 @@ export default function Sidebar() {
                   d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               My Signatures
+              <CountBadge count={signaturesCount.data} isActive={location.pathname === '/batches/my-signatures'} />
             </Link>
           )}
 
@@ -151,7 +176,7 @@ export default function Sidebar() {
           )}
 
           {/* Reports */}
-          {/* <Link 
+          <Link 
             to="/reports"
             className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
                 location.pathname === '/reports' 
@@ -164,7 +189,7 @@ export default function Sidebar() {
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             Reports
-          </Link> */}
+          </Link> 
         </div>
       </nav>
     </aside>
